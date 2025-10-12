@@ -1,17 +1,12 @@
-// LLM integration for TOC Gemini Nano AI Chrome Extension
-
-console.log('LLM module loaded');
-
-// AI处理函数
-function processWithAI(data) {
-  console.log('Processing with AI:', data);
-  
-  // AI处理逻辑
-  return {
-    success: true,
-    result: 'AI processing result'
-  };
+// ai/llm.js
+export async function generateTitles(textArray) {
+  // 纯本地 mock：取首句前 24 字当标题，后面一句做摘要
+  return textArray.map(t => {
+    const sents = t.split(/(?<=[。！？.!?])/);
+    const first = (sents[0] || t).trim();
+    const title = first.slice(0, 24).replace(/\s+/g, ""); // 简短标题
+    const summary = (sents[1] || t.slice(0, 80)).trim();
+    return { title: title || "小节", summary };
+  });
 }
 
-// 导出函数
-export { processWithAI };
