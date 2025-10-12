@@ -1,15 +1,15 @@
 import { segmentPage } from "./segment.js";
 
 const state = {
-  chunks: [],        // [{text, anchorId}]
-  outlines: []       // [{title, summary, anchorId}]
+  chunks: [],        // [{text, anchorId}] 原文分段（纯文本 + 跳转锚点）
+  outlines: []       // [{title, summary, anchorId}] AI 结果（标题+摘要+同锚点）
 };
 
 // 简单节流：首屏先取前 N 段，滚动时再补
 const FIRST_BATCH = 8;
 
 async function init() {
-  state.chunks = segmentPage();
+  state.chunks = segmentPage(); // 从 segment.js 来
   // 先返回占位“生成中…”
   state.outlines = state.chunks.map(({anchorId}) => ({
     title: "生成中…",
@@ -24,12 +24,13 @@ async function requestAI(start, end) {
   const { generateTitles } = await import(chrome.runtime.getURL("ai/llm.js"));
   const slice = state.chunks.slice(start, end);
   const texts = slice.map(c => c.text);
-  const results = await generateTitles(texts); // [{title, summary}]
+  const results = await generateTitles(texts); // [{title, summary}]   让本地模型（Gemini Nano）生成结果（顺序要与输入严格一致）
+  // 把结果“对齐写回”全局状态
   results.forEach((r, i) => {
     const idx = start + i;
     state.outlines[idx] = { ...r, anchorId: state.chunks[idx].anchorId };
   });
-  // 通知侧栏增量更新
+  // 通知侧栏：start..end 这一段已经更新完，可以做增量渲染
   chrome.runtime.sendMessage({ type: "aiOutlineUpdated", start, end });
 }
 
@@ -45,18 +46,18 @@ function requestRest() {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "getOutline") {
+  if (msg.type === "getOutline") { // 侧栏刚打开，会发 getOutline 来索要当前目录列表
     sendResponse({ outlines: state.outlines });
-    // 侧栏一打开就拉余量
+    // “生成中…”占位回给侧栏
     requestRest();
   }
-  if (msg.type === "jumpTo") {
+  if (msg.type === "jumpTo") { // 点侧栏标题 → 页面平滑跳到对应原文位置
     const el = document.getElementById(msg.anchorId);
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
     sendResponse(true);
   }
-  if (msg.type === "getActiveByScroll") {
-    // 找到最接近视窗顶部的 anchor
+  if (msg.type === "getActiveByScroll") { // 高亮 = 在侧边目录里把“当前所在章节”用样式标出来
+   // 找到最接近视窗顶部的 anchor
     const vis = state.outlines.map(o => {
       const el = document.getElementById(o.anchorId);
       if (!el) return { id: o.anchorId, top: Infinity };
