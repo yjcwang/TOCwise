@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "TOC Gemini Nano AI",
+  "version": "1.0.0",
+  "description": "AI-powered Chrome extension with Gemini Nano integration",
+  "permissions": [],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js", "content/segment.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "sidebar/sidebar.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
