@@ -32,6 +32,7 @@ function ensureAnchor(node) {
 
 // 默认分段策略,字数分段法
 function segmentPage_generic() {
+  const root = document.body;
   // Step 1: 获取候选节点
   const sel = [ // 典型的内容标签
     "article", "section", "main", "blockquote",
@@ -40,9 +41,9 @@ function segmentPage_generic() {
     "div.markdown", "div.prose", "div.message",
     "div.chat-message", "div.post", "div.comment"
   ].join(",");
-  const nodes = [...root.querySelectorAll(sel)].filter(isVisible); // 过滤掉不可见的元素 with isVisible()
+  let nodes = [...root.querySelectorAll(sel)].filter(isVisible); // 过滤掉不可见的元素 with isVisible()
   // 去掉导航/脚注/代码块大容器等明显无关区域（可渐进增强）
-  nodes.filter(n => {
+  nodes = nodes.filter(n => {
     const t = (n.innerText || "").trim();
     if (!t) return false;
     if (t.length < 30) return false;           // 太短的先丢
@@ -52,8 +53,8 @@ function segmentPage_generic() {
   // Step 2: 为每个节点添加锚点
   nodes.forEach(ensureAnchor);
   // Step 3: 合并节点为块（chunk）
-  minLen=300;
-  maxLen=1200;
+  const minLen=300;
+  const maxLen=1200;
   const chunks = []; // 最终输出结果
   let buf = [];
   let bufLen = 0;
@@ -63,7 +64,8 @@ function segmentPage_generic() {
     if (buf.length) {
       const text = buf.map(n => (n.innerText || "").trim()).join("\n\n");
       const ids  = buf.map(n => n.dataset.__ai_anchor_id).filter(Boolean);
-      chunks.push({ text, anchorIds: ids }); // 记录下这些节点的锚点 ID（后面会用于点击跳转）
+      const anchorId = buf[0].dataset.__ai_anchor_id;
+      chunks.push({ text, anchorId }); // 记录下这些节点的锚点 ID（后面会用于点击跳转）
       buf = []; bufLen = 0;
     }
   };
@@ -87,27 +89,37 @@ function segmentPage_chat() {
   // Step 3: 输出结构（每条消息就是一个块）
   const chunks = nodes.map(node => ({
     text: node.innerText.trim(),
-    anchorId: node.id,
+    anchorId: node.dataset.__ai_anchor_id,
     role: node.dataset.turn || "unknown"
   })).filter(c => c.text.length > 0);
 
-  console.log("Detected ChatGPT chat layout:", chunks.length, "messages");
   return chunks;
 }
 
 
 
 export function segmentPage() {
+  let chunks;
   if(document.querySelector("article[data-turn]")) {
-    const chunks = segmentPage_chat();
+    chunks = segmentPage_chat();
     console.log("Detected ChatGPT chat layout:", chunks.length, "chunks output");
   } else {
-    const chunks = segmentPage_generic();
+    chunks = segmentPage_generic();
     console.log("Detected generic layout:", chunks.length, "chunks output");
   }
   // 输出：供 AI 使用的干净分段数据
   return chunks.map((c) => ({  
     text: c.text,
-    anchorId: c.anchorIds && c.anchorIds.length ? c.anchorIds[0] : null
+    anchorId: c.anchorId
   })).filter(c => c.text.trim().length > 0 && c.anchorId);
 }
+
+
+// 测试方法
+// 注释 export 字符
+/* 
+const out = segmentPage();
+console.log(out.length, out[0]);
+document.getElementById(out[2].anchorId).scrollIntoView({ behavior:"smooth", block:"start" });
+*/
+
