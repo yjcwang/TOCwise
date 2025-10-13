@@ -1,4 +1,4 @@
-console.log('content script loaded');
+console.log('Content script loaded');
 
 const state = {
   chunks: [],        // [{text, anchorId}] 原文分段（纯文本 + 跳转锚点）
@@ -10,7 +10,7 @@ const FIRST_BATCH = 8;
 
 //初始化
 async function init() {
-  state.chunks = window.segmentPage(); // 从 segment.js 来
+  state.chunks = await window.segmentPage(); // 从 segment.js 来, 等待异步返回结果
   // 先返回占位“生成中…”
   state.outlines = state.chunks.map(({anchorId}) => ({
     title: "生成中…",

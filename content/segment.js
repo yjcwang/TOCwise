@@ -2,6 +2,8 @@
 // 从当前页面提取出「可读的内容块」，然后切分成合适长度的文本段，供后续 AI（Gemini Nano）生成标题
 // 两种分割方法，generic或者chat
 
+//TODO 更改字数分段，完善chat分段策略
+
 console.log('Segment script loaded');
 
 // 判断元素是否可见
@@ -54,7 +56,7 @@ function segmentPage_generic() {
   // Step 2: 为每个节点添加锚点
   nodes.forEach(ensureAnchor);
   // Step 3: 合并节点为块（chunk）
-  const minLen=300;
+  const minLen=500;
   const maxLen=1200;
   const chunks = []; // 最终输出结果
   let buf = [];
@@ -99,22 +101,40 @@ function segmentPage_chat() {
   return chunks;
 }
 
+function isChatGPT() {
+  const host = location.hostname;
+  const isMatch = /(^|\.)chat\.openai\.com$/.test(host) || /(^|\.)chatgpt\.com$/.test(host);
+  return isMatch;
+}
 
-
+// 返回promise让外部等待chunks读取完
 function segmentPage() {
-  let chunks;
-  if(document.querySelector("article[data-turn]")) {
-    chunks = segmentPage_chat();
-    console.log("Detected ChatGPT chat layout:", chunks.length, "chunks output");
-  } else {
-    chunks = segmentPage_generic();
-    console.log("Detected generic layout:", chunks.length, "chunks output");
-  }
-  // 输出：供 AI 使用的干净分段数据
-  return chunks.map((c) => ({  
-    text: c.text,
-    anchorId: c.anchorId
-  })).filter(c => c.text.trim().length > 0 && c.anchorId);
+  return new Promise(resolve => {
+    if (isChatGPT()) {
+      // chatgpt选项
+      const waitingTime = 3000;
+      console.log("Waiting for ChatGPT DOM to load..., for" + waitingTime + " ms");
+      // 必须等待chatgpt界面加载完成才读取chunks
+      setTimeout(() => {
+        const chunks = segmentPage_chat();
+        console.log("Detected ChatGPT chat layout:", chunks.length, "chunks output");
+        const clean = chunks.map(c => ({
+          text: c.text,
+          anchorId: c.anchorId
+        })).filter(c => c.text.trim().length > 0 && c.anchorId);
+        resolve(clean);  // 异步返回结果
+      }, 3000);
+    } else {
+      // 分段选项
+      const chunks = segmentPage_generic();
+      console.log("Detected generic layout:", chunks.length, "chunks output");
+      const clean = chunks.map(c => ({
+        text: c.text,
+        anchorId: c.anchorId
+      })).filter(c => c.text.trim().length > 0 && c.anchorId);
+      resolve(clean);
+    }
+  });
 }
 window.segmentPage = segmentPage;
 
