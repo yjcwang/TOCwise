@@ -17,7 +17,7 @@ function isVisible(el) {
 }
 
 // 获取候选内容块
-function getCandidateBlocks(root=document.body) {
+function getCandidateNodes_generic(root=document.body) {
   const sel = [ // 典型的内容标签
     "article", "section", "main", "blockquote",
     "p", "li", "pre", "div[role='article']",
@@ -37,7 +37,31 @@ function getCandidateBlocks(root=document.body) {
 }
 
 // 合并内容块
-function mergeBlocks(nodes, minLen=300, maxLen=1200) {
+function mergeToChunks_generic(nodes, minLen=300, maxLen=1200) {
+  
+}
+
+// 给每个内容块加一个隐藏锚点（anchor），跳转目标的锚点
+function ensureAnchor(node) {
+  if (!node.id) {
+    const id = "ai-anchor-" + Math.random().toString(36).slice(2, 10);
+    const span = document.createElement("span");
+    span.id = id;
+    span.style.cssText = "position:relative;display:block;height:0;overflow:hidden;";
+    node.prepend(span);
+    node.dataset.__ai_anchor_id = id;
+  } else {
+    node.dataset.__ai_anchor_id = node.id;
+  }
+}
+
+// 默认分段策略,字数分段法
+function segmentPage_generic() {
+  // Step 1: 获取候选节点
+  const nodes = getCandidateNodes_generic();
+  // Step 2: 为每个节点添加锚点
+  nodes.forEach(ensureAnchor);
+  // Step 3: 合并节点为块（chunk）
   const chunks = []; // 最终输出结果
   let buf = [];
   let bufLen = 0;
@@ -63,25 +87,12 @@ function mergeBlocks(nodes, minLen=300, maxLen=1200) {
   return chunks;
 }
 
-// 给每个内容块加一个隐藏锚点（anchor），跳转目标的锚点
-function ensureAnchor(node) {
-  if (!node.id) {
-    const id = "ai-anchor-" + Math.random().toString(36).slice(2, 10);
-    const span = document.createElement("span");
-    span.id = id;
-    span.style.cssText = "position:relative;display:block;height:0;overflow:hidden;";
-    node.prepend(span);
-    node.dataset.__ai_anchor_id = id;
-  } else {
-    node.dataset.__ai_anchor_id = node.id;
-  }
-}
-
 export function segmentPage() {
-  const blocks = getCandidateBlocks();
-  blocks.forEach(ensureAnchor);
-  const chunks = mergeBlocks(blocks);
-  // 为每个chunk决定“主锚点”（第一个块的锚点），跳转起始的锚点
+  if(true) {
+    const chunks = segmentPage_generic();
+  } else {
+    // TODO: 其他分段策略
+  }
   // 输出：供 AI 使用的干净分段数据
   return chunks.map((c) => ({  
     text: c.text,
