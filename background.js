@@ -2,27 +2,21 @@
 // 运行在后台、不直接操作网页，
 // 用于监听事件、管理扩展状态、与内容脚本通信。
 
-// 扩展安装事件
-chrome.runtime.onInstalled.addListener((details) => {
-  console.log('Extension installed:', details);
+// 扩展安装时初始化
+chrome.runtime.onInstalled.addListener(() => {
+  // 设置点击扩展图标时自动打开侧边栏
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 });
 
-// 消息监听, 监听来自内容脚本或侧边栏的消息
-// 在 content script → background → Gemini Nano 之间传数据
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Background received message:', request);
-  
-  // 处理消息逻辑
-  switch (request.action) {
-    default:
-      console.log('Unknown action:', request.action);
-  }
-});
-
-// 侧边栏点击事件
+// 处理扩展图标点击事件
 chrome.action.onClicked.addListener(async (tab) => {
-    if (tab.id) {
-      await chrome.sidePanel.open({ tabId: tab.id });
-    }
-  });
+  // 在指定标签页打开侧边栏
+  await chrome.sidePanel.open({ tabId: tab.id });
+});
+
+// 监听来自内容脚本的消息
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // 这里可以处理扩展内部的消息通信
+  console.log('Background received:', request);
+});
   

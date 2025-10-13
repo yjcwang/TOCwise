@@ -3,7 +3,7 @@
   "name": "TOC Gemini Nano AI",
   "version": "1.0.0",
   "description": "AI-powered Chrome extension with Gemini Nano integration",
-  "permissions": [],
+  "permissions": ["sidePanel"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
@@ -22,7 +22,10 @@
     }
   ],
   "action": {
-    "default_popup": "sidebar/sidebar.html"
+    "default_title": "AI 语义目录"
+  },
+  "side_panel": {
+    "default_path": "sidebar/sidebar.html"
   },
   "icons": {
     "16": "icons/icon16.png",
