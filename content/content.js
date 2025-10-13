@@ -1,3 +1,4 @@
+console.log('content script loaded');
 
 const state = {
   chunks: [],        // [{text, anchorId}] 原文分段（纯文本 + 跳转锚点）
