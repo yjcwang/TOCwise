@@ -1,5 +1,6 @@
 // 网页语义分段核心逻辑
 // 从当前页面提取出「可读的内容块」，然后切分成合适长度的文本段，供后续 AI（Gemini Nano）生成标题
+// 两种分割方法，generic或者chat
 
 console.log('Segment script loaded');
 
@@ -30,7 +31,7 @@ function ensureAnchor(node) {
   }
 }
 
-// 默认分段策略,字数分段法
+// 字数分段法
 function segmentPage_generic() {
   const root = document.body;
   // Step 1: 获取候选节点
@@ -81,9 +82,11 @@ function segmentPage_generic() {
   return chunks;
 }
 
+// chatbot回答分段法
 function segmentPage_chat() {
   // Step 1: 找到所有 <article data-turn="user|assistant"> 节点
-  const nodes = [...document.querySelectorAll("article[data-turn]")].filter(isVisible);
+  // 过滤掉用户回答
+  const nodes = [...document.querySelectorAll("article[data-turn='assistant']")].filter(isVisible);
   // Step 2: 给每个加上一个锚点
   nodes.forEach(ensureAnchor);
   // Step 3: 输出结构（每条消息就是一个块）
