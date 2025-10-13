@@ -25,8 +25,9 @@ async function requestAI(start, end) {
   const { generateTitles } = await import(chrome.runtime.getURL("ai/llm.js"));
   const slice = state.chunks.slice(start, end);
   const texts = slice.map(c => c.text);
-  const results = await generateTitles(texts); // [{title}]   让本地模型（Gemini Nano）生成结果（顺序要与输入严格一致）
-  // 把结果“对齐写回”全局状态
+  // 输出[{title: string}]   让模型生成结果, 顺序要与输入严格一致
+  const results = await generateTitles(texts); 
+  // 把局部位置对齐全局位置，并写入对应锚点id
   results.forEach((r, i) => {
     const idx = start + i;
     state.outlines[idx] = { ...r, anchorId: state.chunks[idx].anchorId };
