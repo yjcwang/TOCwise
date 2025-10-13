@@ -1,6 +1,6 @@
 // ai/llm.js
 
-// 输入：string[]   输出：{ title: string }[]
+// 输入：文本段落 string[]   输出：标题 { title: string }[]
 export async function generateTitles(textArray) {
 
   // 确保是数组
