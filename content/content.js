@@ -5,9 +5,10 @@ const state = {
   outlines: []       // [{title, summary, anchorId}] AI 结果（标题+摘要+同锚点）
 };
 
-// 简单节流：首屏先取前 N 段，滚动时再补
+//首屏先取前 N 段，滚动时再补
 const FIRST_BATCH = 8;
 
+//初始化
 async function init() {
   state.chunks = segmentPage(); // 从 segment.js 来
   // 先返回占位“生成中…”
@@ -20,6 +21,7 @@ async function init() {
   requestAI(0, Math.min(FIRST_BATCH, state.chunks.length));
 }
 
+//AI调用
 async function requestAI(start, end) {
   const { generateTitles } = await import(chrome.runtime.getURL("ai/llm.js"));
   const slice = state.chunks.slice(start, end);
@@ -34,7 +36,7 @@ async function requestAI(start, end) {
   chrome.runtime.sendMessage({ type: "aiOutlineUpdated", start, end });
 }
 
-// 继续请求剩余部分（侧栏或滚动触发）
+// 继续请求剩余部分，侧栏交互或滚动触发
 function requestRest() {
   const start = Math.min(
     state.outlines.findIndex(o => o.title === "生成中…"),
@@ -45,17 +47,21 @@ function requestRest() {
   requestAI(start, end);
 }
 
+//监听侧边栏并反应
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  
   if (msg.type === "getOutline") { // 侧栏刚打开，会发 getOutline 来索要当前目录列表
     sendResponse({ outlines: state.outlines });
     // “生成中…”占位回给侧栏
     requestRest();
   }
+  
   if (msg.type === "jumpTo") { // 点侧栏标题 → 页面平滑跳到对应原文位置
     const el = document.getElementById(msg.anchorId);
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
     sendResponse(true);
   }
+  
   if (msg.type === "getActiveByScroll") { // 高亮 = 在侧边目录里把“当前所在章节”用样式标出来
    // 找到最接近视窗顶部的 anchor
     const vis = state.outlines.map(o => {
