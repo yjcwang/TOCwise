@@ -20,7 +20,7 @@ function render(outlines) {
     const li = document.createElement("li");
     li.className = "item";
     li.dataset.anchor = o.anchorId;
-    li.innerHTML = `<div class="t">${o.title}</div><div class="s">${o.summary || ""}</div>`;
+    li.innerHTML = `<div class="t">${o.title}</div>`;
     //点击目录标题，跳转至页面
     li.onclick = async () => {
       const tabId = await getActiveTabId();

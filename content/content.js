@@ -2,7 +2,7 @@ import { segmentPage } from "./segment.js";
 
 const state = {
   chunks: [],        // [{text, anchorId}] 原文分段（纯文本 + 跳转锚点）
-  outlines: []       // [{title, summary, anchorId}] AI 结果（标题+摘要+同锚点）
+  outlines: []       // [{title, anchorId}] AI 结果（标题+同锚点）
 };
 
 //首屏先取前 N 段，滚动时再补
@@ -14,7 +14,6 @@ async function init() {
   // 先返回占位“生成中…”
   state.outlines = state.chunks.map(({anchorId}) => ({
     title: "生成中…",
-    summary: "",
     anchorId
   }));
   // 触发首批生成
@@ -26,7 +25,7 @@ async function requestAI(start, end) {
   const { generateTitles } = await import(chrome.runtime.getURL("ai/llm.js"));
   const slice = state.chunks.slice(start, end);
   const texts = slice.map(c => c.text);
-  const results = await generateTitles(texts); // [{title, summary}]   让本地模型（Gemini Nano）生成结果（顺序要与输入严格一致）
+  const results = await generateTitles(texts); // [{title}]   让本地模型（Gemini Nano）生成结果（顺序要与输入严格一致）
   // 把结果“对齐写回”全局状态
   results.forEach((r, i) => {
     const idx = start + i;
