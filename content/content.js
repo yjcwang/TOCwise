@@ -1,4 +1,4 @@
-import { segmentPage } from "./segment.js";
+import { segmentPage } from "content\segment.js";
 
 const state = {
   chunks: [],        // [{text, anchorId}] 原文分段（纯文本 + 跳转锚点）
