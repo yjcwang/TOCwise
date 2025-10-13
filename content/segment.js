@@ -101,7 +101,7 @@ function segmentPage_chat() {
 
 
 
-export function segmentPage() {
+function segmentPage() {
   let chunks;
   if(document.querySelector("article[data-turn]")) {
     chunks = segmentPage_chat();
@@ -116,10 +116,10 @@ export function segmentPage() {
     anchorId: c.anchorId
   })).filter(c => c.text.trim().length > 0 && c.anchorId);
 }
+window.segmentPage = segmentPage;
 
 
 // 测试方法
-// 注释 export 字符
 /* 
 const out = segmentPage();
 console.log(out.length, out[0]);

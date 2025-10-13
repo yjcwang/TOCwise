@@ -4,13 +4,15 @@
   "version": "1.0.0",
   "description": "AI-powered Chrome extension with Gemini Nano integration",
   "permissions": [],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content/content.js", "content/segment.js"]
+      "js": ["content/content.js", "content/segment.js"],
+      "run_at": "document_idle"
     }
   ],
   "action": {
