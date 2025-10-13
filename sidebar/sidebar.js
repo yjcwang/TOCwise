@@ -10,12 +10,14 @@ async function getActiveTabId() {
 //获取ai生成的目录
 async function fetchOutline() {
   const tabId = await getActiveTabId();
+  // 侧栏 → 当前页面的 content script
   return chrome.tabs.sendMessage(tabId, { type: "getOutline" });
 }
 
 //渲染目录
 function render(outlines) {
   ul.innerHTML = "";
+  // 把每个标题渲染成一个 <li>
   for (const o of outlines) {
     const li = document.createElement("li");
     li.className = "item";
@@ -40,6 +42,7 @@ async function tickActive() {
   });
 }
 //监听ai标题更新，刷新显示
+// 监听 API 统一是 runtime.onMessage
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "aiOutlineUpdated") {
     // 增量更新，重新取一次
