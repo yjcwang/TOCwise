@@ -5,7 +5,7 @@ export async function generateTitles(textArray) {
     const sents = t.split(/(?<=[。！？.!?])/);
     const first = (sents[0] || t).trim();
     const title = first.slice(0, 24).replace(/\s+/g, ""); // 简短标题
-    return { title: title || "小节", summary };
+    return { title: title || "小节" };
   });
 }
 
