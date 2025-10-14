@@ -18,18 +18,18 @@ export async function generateTitles(textArray) {
   if ("Summarizer" in self) {
     try {
       const availability = await Summarizer.availability(); 
-      // availability: 'readily'|'after-download'|'unavailable'
+      // availability: 'downloadable'|'downloading'|'unavailable'| 'available'
       
-      console.log("llm: api availability is ",availability);
+      console.log("llm: api availability is ", availability);
       
       // 等待下载，弹窗提示用户等待
-      if (availability === "after-download") {
+      if (availability === "downloading") {
       console.warn("Downloading Gemini Nano... Please wait...");
       alert("Downloading Gemini Nano... Please wait for some seconds...");
       return textArray.map(fallbackTitle);
     }
       
-      // 首次创建需要用户手势激活，如点击按钮等
+      // 确认Suammarizer可用
       if (availability !== "unavailable") {
         canUseSummarizer = true;
       }
@@ -37,12 +37,12 @@ export async function generateTitles(textArray) {
       canUseSummarizer = false;
     }
   }
-  // 如果不可用或无用户激活，直接回退
+  // 如果不可用就回退
   if (!canUseSummarizer) {
     console.log("llm: fall back");
     return textArray.map(fallbackTitle);
   }
-  
+
   console.log("llm: init ai");
   // 创建初始化 summarizer 实例
   let summarizer;
