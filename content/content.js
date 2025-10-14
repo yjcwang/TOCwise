@@ -120,6 +120,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     vis.sort((a,b)=>a.top-b.top);
     sendResponse({ anchorId: vis[0]?.id });
   }
+
+  // 重新生成标题列表
+  if (msg.type === "reInit") {
+    console.log("Content: reInit triggered from sidebar");
+    init();  
+    sendResponse({ ok: true });
+  }
 });
 
 // 延迟 5 秒，确保页面内容加载完成再启动

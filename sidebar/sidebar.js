@@ -66,10 +66,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   setInterval(tickActive, 600);
 });
 
-//手动刷新按钮
+//刷新按钮，重新生成标题列表
 refreshBtn.onclick = async () => {
-  // 触发内容脚本继续拉余量
   console.log("sidebar: click on refresh");
-  const res = await fetchOutline();
-  render(res.outlines);
+  const tabId = await getActiveTabId();
+  await chrome.tabs.sendMessage(tabId, { type: "reInit" });
 };
+
