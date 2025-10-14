@@ -23,7 +23,7 @@ const FIRST_BATCH = 20;
 
 //初始化
 async function init() {
-  console.log("init");
+  console.log("content: init");
   state.chunks = await window.segmentPage(); // 从 segment.js 来, 等待异步返回结果
   // 先返回占位“生成中…”
   state.outlines = state.chunks.map(({anchorId}) => ({
@@ -122,4 +122,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-init();
+// 延迟 5 秒，确保页面内容加载完成再启动
+setTimeout(init, 5000);
+

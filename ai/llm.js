@@ -39,10 +39,10 @@ export async function generateTitles(textArray) {
   }
   // 如果不可用或无用户激活，直接回退
   if (!canUseSummarizer) {
-    console.log(navigator.userActivation.isActive)
     console.log("llm: fall back");
     return textArray.map(fallbackTitle);
   }
+  
   console.log("llm: init ai");
   // 创建初始化 summarizer 实例
   let summarizer;

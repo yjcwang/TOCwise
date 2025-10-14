@@ -70,5 +70,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 refreshBtn.onclick = async () => {
   // 触发内容脚本继续拉余量
   console.log("sidebar: click on refresh");
-  await fetchOutline(); 
+  const res = await fetchOutline();
+  render(res.outlines);
 };
