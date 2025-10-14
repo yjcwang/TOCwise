@@ -19,7 +19,7 @@ function isVisible(el) {
   );
 }
 
-// 给每个内容块加一个隐藏锚点（anchor），跳转目标的锚点
+// 给每个node加一个隐藏锚点（anchor），跳转目标的锚点
 function ensureAnchor(node) {
   if (!node.id) {
     const id = "ai-anchor-" + Math.random().toString(36).slice(2, 10);

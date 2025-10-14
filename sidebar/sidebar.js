@@ -24,10 +24,13 @@ function render(outlines) {
     li.className = "item";
     li.dataset.anchor = o.anchorId;
     li.innerHTML = `<div class="t">${o.title}</div>`;
-    //点击目录标题，跳转至页面
+    //点击目录标题，跳转至页面, 在content里横线标注起始和结束的段落
+    // 所以需要发送当前o.anchorId和nextAnchorId
+    const idx = outlines.indexOf(o);
+    const next = outlines[idx + 1]; // 也发送下一个chunk的anchor，可能 undefined
     li.onclick = async () => {
       const tabId = await getActiveTabId();
-      await chrome.tabs.sendMessage(tabId, { type: "jumpTo", anchorId: o.anchorId });
+      await chrome.tabs.sendMessage(tabId, { type: "jumpTo", anchorId: o.anchorId, nextAnchorId: next ? next.anchorId : null });
     };
     ul.appendChild(li);
   }
@@ -42,7 +45,7 @@ async function tickActive() {
     li.classList.toggle("active", li.dataset.anchor === anchorId);
   });
 }
-//监听ai标题更新，刷新显示
+// 监听ai标题更新，刷新显示
 // 监听 API 统一是 runtime.onMessage
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "aiOutlineUpdated") {
