@@ -2,7 +2,6 @@
 
 // 输入：文本段落 string[]   输出：标题 { title: string }[]
 export async function generateTitles(textArray) {
-
   // 确保是数组
   if (!Array.isArray(textArray)) return [];
 
@@ -21,6 +20,8 @@ export async function generateTitles(textArray) {
       const availability = await Summarizer.availability(); 
       // availability: 'readily'|'after-download'|'unavailable'
       
+      console.log("llm: api availability is ",availability);
+      
       // 等待下载，弹窗提示用户等待
       if (availability === "after-download") {
       console.warn("Downloading Gemini Nano... Please wait...");
@@ -29,7 +30,7 @@ export async function generateTitles(textArray) {
     }
       
       // 首次创建需要用户手势激活，如点击按钮等
-      if (availability !== "unavailable" && navigator.userActivation?.isActive) {
+      if (availability !== "unavailable") {
         canUseSummarizer = true;
       }
     } catch {
@@ -38,9 +39,11 @@ export async function generateTitles(textArray) {
   }
   // 如果不可用或无用户激活，直接回退
   if (!canUseSummarizer) {
+    console.log(navigator.userActivation.isActive)
+    console.log("llm: fall back");
     return textArray.map(fallbackTitle);
   }
-
+  console.log("llm: init ai");
   // 创建初始化 summarizer 实例
   let summarizer;
   try {
@@ -59,7 +62,10 @@ export async function generateTitles(textArray) {
   for (const text of textArray) {
     try {
       const raw = await summarizer.summarize(text, {
-        context: "Generate a concise and short section title in the same language as the input."
+        context: 
+        "Generate a short English section title (max 5 words). \
+        Do not include or repeat the website or product name (e.g. ChatGPT, Google). \
+        Start directly with the main content."
       });
       const title = String(raw || "").trim();
       results.push({ title: title || fallbackTitle(text).title });

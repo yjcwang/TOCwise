@@ -16,6 +16,7 @@ async function fetchOutline() {
 
 //渲染目录
 function render(outlines) {
+  console.log("sidebar: render");
   ul.innerHTML = "";
   // 把每个标题渲染成一个 <li>
   for (const o of outlines) {
@@ -46,6 +47,7 @@ async function tickActive() {
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "aiOutlineUpdated") {
     // 增量更新，重新取一次
+    console.log("sidebar: aiOutline Updated");
     fetchOutline().then(res => render(res.outlines));
   }
 });
@@ -53,6 +55,7 @@ chrome.runtime.onMessage.addListener((msg) => {
 //页面初始化
 document.addEventListener("DOMContentLoaded", async () => {
   //获取目录
+  console.log("sidebar: init outline");
   const res = await fetchOutline();
   //渲染目录
   render(res.outlines);
@@ -63,5 +66,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 //手动刷新按钮
 refreshBtn.onclick = async () => {
   // 触发内容脚本继续拉余量
+  console.log("sidebar: click on refresh");
   await fetchOutline(); 
 };
