@@ -24,7 +24,7 @@ const FIRST_BATCH = 20;
 //初始化
 async function init() {
   console.log("content: init");
-  state.chunks = await window.segmentPage(); // 从 segment.js 来, 等待异步返回结果
+  state.chunks = window.segmentPage(); // 从 segment.js 来, 等待异步返回结果
   // 先返回占位“生成中…”
   state.outlines = state.chunks.map(({anchorId}) => ({
     title: "生成中…",

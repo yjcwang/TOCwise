@@ -109,32 +109,26 @@ function isChatGPT() {
 
 // 返回promise让外部等待chunks读取完
 function segmentPage() {
-  return new Promise(resolve => {
-    if (isChatGPT()) {
-      // chatgpt选项
-      const waitingTime = 3000;
-      console.log("Waiting for ChatGPT DOM to load..., for" + waitingTime + " ms");
-      // 必须等待chatgpt界面加载完成才读取chunks
-      setTimeout(() => {
-        const chunks = segmentPage_chat();
-        console.log("Detected ChatGPT chat layout:", chunks.length, "chunks output");
-        const clean = chunks.map(c => ({
-          text: c.text,
-          anchorId: c.anchorId
-        })).filter(c => c.text.trim().length > 0 && c.anchorId);
-        resolve(clean);  // 异步返回结果
-      }, 3000);
-    } else {
-      // 分段选项
-      const chunks = segmentPage_generic();
-      console.log("Detected generic layout:", chunks.length, "chunks output");
-      const clean = chunks.map(c => ({
-        text: c.text,
-        anchorId: c.anchorId
-      })).filter(c => c.text.trim().length > 0 && c.anchorId);
-      resolve(clean);
-    }
-  });
+  let chunks = [];
+
+  if (isChatGPT()) {
+    // gpt分段
+    chunks = segmentPage_chat();
+    console.log("Detected ChatGPT chat layout:", chunks.length, "chunks output");
+  } else {
+    // 常规网页分段
+    chunks = segmentPage_generic();
+    console.log("Detected generic layout:", chunks.length, "chunks output");
+  }
+
+  const clean = chunks
+    .map(c => ({
+      text: c.text,
+      anchorId: c.anchorId
+    }))
+    .filter(c => c.text.trim().length > 0 && c.anchorId);
+
+  return clean; 
 }
 window.segmentPage = segmentPage;
 
