@@ -1,21 +1,17 @@
 console.log('Content script loaded');
 
-// 注入一个极简蓝色横线样式
-// 极简蓝线样式（不抖动、不花哨）
+// 注入一个极简横线样式
 const style = document.createElement("style");
 style.textContent = `
   .ai-flash-marker {
     height: 2px;
-    background: #0062ff; /* 纯蓝色 */
+    background:rgb(255, 119, 0); /* 纯蓝色 */
     opacity: 1;
     margin: 0; /* 去掉上下间距避免文字跳动 */
     pointer-events: none;  /* 不挡点击 */
   }
 `;
 document.head.appendChild(style);
-
-
-
 
 const state = {
   chunks: [],        // [{text, anchorId}] 原文分段（纯文本 + 跳转锚点）
@@ -80,7 +76,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   
   if (msg.type === "jumpTo") { // 点侧栏标题 → 页面平滑跳到对应原文位置，并且标注横线
     const el = document.getElementById(msg.anchorId);
+    /* 暂时不添加跳转后向下偏移
     if (/chat\.openai\.com/.test(location.hostname)) {
+      console.log("ChatGpt jumpTo");
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       // 自定义滚动：目标位置 - 80px 留白
@@ -88,9 +86,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const targetY = rect.top + window.scrollY - 80;
       window.scrollTo({ top: targetY, behavior: "smooth" });
 
-    }
+    }*/
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
     
-      
     // 插入一个临时标记线（在锚点位置）
     document.querySelectorAll(".ai-flash-marker").forEach(m => m.remove()); // 先清理之前线
     const marker = document.createElement("div");
