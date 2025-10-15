@@ -93,7 +93,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 //刷新按钮，重新生成标题列表
 refreshBtn.onclick = async () => {
   console.log("sidebar: click on refresh");
-  const tabId = await getActiveTabId();
-  await chrome.tabs.sendMessage(tabId, { type: "reInit" });
+  try {
+    // 重新获取tab id
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    // 向该tab id发送信息
+    await chrome.tabs.sendMessage(tab.id, { type: "reInit" });
+  } catch (err) {
+    console.warn("sidebar: refresh failed, no receiver in this page", err);
+  }
 };
+
 

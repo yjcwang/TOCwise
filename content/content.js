@@ -19,7 +19,7 @@ const state = {
 };
 
 //首屏先取前 N 段，滚动时再补
-const FIRST_BATCH = 20;
+const FIRST_BATCH = 10;
 
 //初始化
 async function init() {
@@ -130,5 +130,5 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 // 延迟 5 秒，确保页面内容加载完成再启动
-setTimeout(init, 5000);
+//setTimeout(init, 5000);
 
