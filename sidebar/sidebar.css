@@ -67,3 +67,18 @@ body {
   font-size: 12px; 
   color: #666; 
 }
+
+/* 顶部按钮样式（统一刷新和检查更新） */
+.head button {
+  margin-left: 6px;
+  padding: 6px 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.head button:hover {
+  background: #0056b3;
+}

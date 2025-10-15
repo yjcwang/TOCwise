@@ -104,3 +104,17 @@ refreshBtn.onclick = async () => {
 };
 
 
+// 检查新增 按钮绑定
+const checkBtn = document.getElementById("checkUpdate");
+checkBtn.onclick = async () => {
+  console.log("sidebar: click on check update");
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    await chrome.tabs.sendMessage(tab.id, { type: "checkUpdate" });
+  } catch (err) {
+    console.warn("sidebar: check update failed", err);
+  }
+};
+
+
+

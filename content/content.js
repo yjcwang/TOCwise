@@ -127,8 +127,72 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     init();  
     sendResponse({ ok: true });
   }
+
+ // 新增标题
+  if (msg.type === "checkUpdate") {
+    console.log("content: checkUpdate triggered from sidebar");
+    rebuildIncremental();
+    sendResponse({ ok: true });
+  }
 });
 
-// 延迟 5 秒，确保页面内容加载完成再启动
-//setTimeout(init, 5000);
 
+// 新增标题函数
+async function rebuildIncremental() {
+  console.log("content: incremental rebuild start");
+
+  const newChunks = window.segmentPage();  // 重新获取页面分段
+  const oldLen = state.chunks.length;
+  const newLen = newChunks.length;
+
+  // 识别chunk数量来判断是否需要新增标题
+  if (newLen <= oldLen) {
+    console.log("No new chunks detected, directory is up to date.");
+    return;
+  }
+
+  // 找到新增部分
+  const added = newChunks.slice(oldLen);
+  console.log(`Detected ${added.length} new chunks`);
+
+  // 追加到 state.chunks
+  state.chunks.push(...added);
+
+  // 为新增部分准备占位标题
+  const start = oldLen;
+  const end = newLen;
+  for (let i = start; i < end; i++) {
+    state.outlines[i] = { title: "生成中…", anchorId: newChunks[i].anchorId };
+  }
+
+  // 调用 AI 仅生成新增部分标题
+  await requestAI(start, end);
+
+  // 通知侧栏更新
+  chrome.runtime.sendMessage({ type: "aiOutlineUpdated", start, end });
+  console.log("content: incremental rebuild complete");
+}
+
+
+// 初次启动，检测到chunk数量不为0时才开始生成标题，最多等待30秒
+(async function waitForChunks() {
+  console.log("content: waiting for chunks...");
+  tries = 0;
+  while (tries < 15) {
+    try {
+      // 执行分段
+      const temp = window.segmentPage?.();
+      if (Array.isArray(temp) && temp.length > 0) {
+        console.log("content: chunks ready → start init()");
+        init(); // 开始生成标题
+        break;
+      }
+    } catch (e) {
+      console.warn("segmentPage not ready yet", e);
+    }
+
+    // 每隔 2 秒重试一次
+    await new Promise(r => setTimeout(r, 2000));
+    tries ++;
+  }
+})();
