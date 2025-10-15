@@ -74,7 +74,7 @@ chrome.runtime.onMessage.addListener((msg) => {
     } else if (msg.status === "ready") {
       loadingDiv.textContent = "Generating Summary...";
     } else if (msg.status === "finish") {
-      loadingDiv.style.display = "none";
+      loadingDiv.textContent = "Generating Finished!";
     }
   }
 });
