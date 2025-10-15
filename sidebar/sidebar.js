@@ -1,6 +1,18 @@
 const ul = document.getElementById("list");
 const refreshBtn = document.getElementById("refresh");
 
+// 初始化AI提示样式
+const loadingDiv = document.createElement("div");
+loadingDiv.id = "loadingHint";
+loadingDiv.textContent = "";
+loadingDiv.style.cssText = `
+  padding: 10px;
+  color: gray;
+  font-style: italic;
+  text-align: center;
+`;
+document.body.prepend(loadingDiv);
+
 //获取当前标签页
 async function getActiveTabId() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -52,6 +64,18 @@ chrome.runtime.onMessage.addListener((msg) => {
     // 增量更新，重新取一次
     console.log("sidebar: aiOutline Updated");
     fetchOutline().then(res => render(res.outlines));
+  }
+  if (msg.type === "aiStatus") {
+    if (msg.status === "loading" || msg.status === "downloading") {
+      loadingDiv.textContent = "🚀 Initializing Gemini Nano AI...";
+      loadingDiv.style.display = "block";
+    } else if (msg.status === "failed") {
+      loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles.";
+    } else if (msg.status === "ready") {
+      loadingDiv.textContent = "Generating Summary...";
+    } else if (msg.status === "finish") {
+      loadingDiv.style.display = "none";
+    }
   }
 });
 

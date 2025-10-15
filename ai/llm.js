@@ -5,6 +5,9 @@ export async function generateTitles(textArray) {
   // 确保是数组
   if (!Array.isArray(textArray)) return [];
 
+  // 通知sidebar开始初始化ai
+  chrome.runtime.sendMessage({ type: "aiStatus", status: "loading" });
+
   // 回退方案：取首句，截断到 24 字符
   const fallbackTitle = (t) => {
     const s = String(t || "");
@@ -26,6 +29,8 @@ export async function generateTitles(textArray) {
       if (availability === "downloading") {
       console.warn("Downloading Gemini Nano... Please wait...");
       alert("Downloading Gemini Nano... Please wait for some seconds...");
+      // 这里也通知sidebar提示“正在下载模型”
+      chrome.runtime.sendMessage({ type: "aiStatus", status: "downloading" });
       return textArray.map(fallbackTitle);
     }
       
@@ -40,6 +45,8 @@ export async function generateTitles(textArray) {
   // 如果不可用就回退
   if (!canUseSummarizer) {
     console.log("llm: fall back");
+    // 通知sidebar: 加载失败
+    chrome.runtime.sendMessage({ type: "aiStatus", status: "failed" });
     return textArray.map(fallbackTitle);
   }
 
@@ -54,8 +61,13 @@ export async function generateTitles(textArray) {
       sharedContext: "This is a text section."
     });
   } catch {
+    chrome.runtime.sendMessage({ type: "aiStatus", status: "failed" });
     return textArray.map(fallbackTitle);
   }
+
+  // 告诉 sidebar：AI 初始化完成，可以生成标题了
+  chrome.runtime.sendMessage({ type: "aiStatus", status: "ready" });
+  
 
   // suammarizer逐段生成标题
   const results = [];
@@ -73,6 +85,9 @@ export async function generateTitles(textArray) {
       results.push(fallbackTitle(text));
     }
   }
+
+  // 告诉 sidebar：生成标题完成
+  chrome.runtime.sendMessage({ type: "aiStatus", status: "finish" });
 
   return results;
 }
