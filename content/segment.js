@@ -101,22 +101,71 @@ function segmentPage_chat() {
   return chunks;
 }
 
+// 标题分段法（Wikipedia、Docs类网页）
+// 每个 chunk 最多 3000 字，超出自动拆分
+function segmentPage_heading() {
+  const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5")].filter(isVisible);
+  if (!headings.length) {
+    console.warn("No headings found, fallback to generic segmentation");
+    return segmentPage_generic();
+  }
+
+  const chunks = [];
+  const MAX_LEN = 3000; // 增加一个长度上限
+
+  for (let i = 0; i < headings.length; i++) {
+    const current = headings[i];
+    const next = headings[i + 1];
+
+    ensureAnchor(current);
+    const anchorId = current.dataset.__ai_anchor_id;
+
+    const content = [];
+    let node = current.nextElementSibling;
+    while (node && node !== next) {
+      if (isVisible(node) && node.innerText.trim()) {
+        content.push(node.innerText.trim());
+      }
+      node = node.nextElementSibling;
+    }
+
+    const fullText = [current.innerText, ...content].join("\n\n").trim();
+
+    // 如果超出上限则切块
+    if (fullText.length > MAX_LEN) {
+      for (let j = 0; j < fullText.length; j += MAX_LEN) {
+        chunks.push({
+          text: fullText.slice(j, j + MAX_LEN),
+          anchorId: anchorId,
+        });
+      }
+    } else {
+      chunks.push({ text: fullText, anchorId: anchorId });
+    }
+  }
+
+  return chunks;
+}
+
+
+
 function isChatGPT() {
   const host = location.hostname;
   const isMatch = /(^|\.)chat\.openai\.com$/.test(host) || /(^|\.)chatgpt\.com$/.test(host);
   return isMatch;
 }
 
-// 返回promise让外部等待chunks读取完
+
 function segmentPage() {
   let chunks = [];
 
   if (isChatGPT()) {
-    // gpt分段
     chunks = segmentPage_chat();
     console.log("Detected ChatGPT chat layout:", chunks.length, "chunks output");
+  } else if (/wikipedia\.org|readthedocs\.io|mdn\.mozilla\.org|medium\.com/.test(location.hostname)) {
+    chunks = segmentPage_heading();
+    console.log("Detected heading layout:", chunks.length, "chunks output");
   } else {
-    // 常规网页分段
     chunks = segmentPage_generic();
     console.log("Detected generic layout:", chunks.length, "chunks output");
   }
@@ -131,12 +180,4 @@ function segmentPage() {
   return clean; 
 }
 window.segmentPage = segmentPage;
-
-
-// 测试方法
-/* 
-const out = segmentPage();
-console.log(out.length, out[0]);
-document.getElementById(out[2].anchorId).scrollIntoView({ behavior:"smooth", block:"start" });
-*/
 
