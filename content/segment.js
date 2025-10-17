@@ -142,6 +142,26 @@ function segmentPage_qwen() {
   return chunks;
 }
 
+function segmentPage_claude() {
+  // 找到所有回复块（每个 data-is-streaming="false" 的 div 都是一条完整回复）
+  const responses = [...document.querySelectorAll('div[data-is-streaming="false"]')].filter(isVisible);
+
+  const chunks = responses.map(el => {
+    // 提取文本内容（优先 markdown 容器）
+    const textContainer = el.querySelector(".standard-markdown") || el;
+    const text = textContainer.innerText.trim();
+
+    ensureAnchor(el);
+    return {
+      text,
+      anchorId: el.dataset.__ai_anchor_id,
+    };
+  }).filter(c => c.text.length > 0);
+
+  return chunks;
+}
+
+
 
 // 标题分段法（Wikipedia、Docs类网页）
 // 每个 chunk 最多 3000 字，超出自动拆分
@@ -209,6 +229,12 @@ function isQwen() {
   return /(^|\.)qwen\.ai$/.test(host);
 }
 
+function isClaude() {
+  const host = location.hostname;
+  return /(^|\.)claude\.ai$/.test(host);
+}
+
+
 
 
 function segmentPage() {
@@ -223,6 +249,9 @@ function segmentPage() {
   } else if (isQwen()) {
     chunks = segmentPage_qwen();
     console.log("Detected Qwen chat layout:", chunks.length, "chunks output");
+  } else if (isClaude()) {
+    chunks = segmentPage_claude();
+    console.log("Detected Claude chat layout:", chunks.length, "chunks output");
   } else if (/wikipedia\.org|readthedocs\.io|mdn\.mozilla\.org|medium\.com/.test(location.hostname)) {
     chunks = segmentPage_heading();
     console.log("Detected heading layout:", chunks.length, "chunks output");
