@@ -85,7 +85,7 @@ function segmentPage_generic() {
 }
 
 // chatbot回答分段法
-function segmentPage_chat() {
+function segmentPage_chatgpt() {
   // Step 1: 找到所有 <article data-turn="user|assistant"> 节点
   // 过滤掉用户回答
   const nodes = [...document.querySelectorAll("article[data-turn='assistant']")].filter(isVisible);
@@ -97,6 +97,27 @@ function segmentPage_chat() {
     anchorId: node.dataset.__ai_anchor_id,
     role: node.dataset.turn || "unknown"
   })).filter(c => c.text.length > 0);
+
+  return chunks;
+}
+
+// Gemini分段法
+function segmentPage_gemini() {
+  // 找到所有 Gemini 对话块
+  const containers = [...document.querySelectorAll("div.conversation-container")].filter(isVisible);
+
+  const chunks = [];
+
+  for (const container of containers) {
+    const node = container.querySelector("model-response");
+    if (node && node.innerText.trim()) {
+      ensureAnchor(node);
+      chunks.push({
+        text: node.innerText.trim(),
+        anchorId: node.dataset.__ai_anchor_id,
+      });
+    }
+  }
 
   return chunks;
 }
@@ -149,10 +170,17 @@ function segmentPage_heading() {
 
 
 
+
+
+
 function isChatGPT() {
   const host = location.hostname;
-  const isMatch = /(^|\.)chat\.openai\.com$/.test(host) || /(^|\.)chatgpt\.com$/.test(host);
-  return isMatch;
+  return /(^|\.)chat\.openai\.com$/.test(host) || /(^|\.)chatgpt\.com$/.test(host);
+}
+
+function isGemini() {
+  const host = location.hostname;
+  return /(^|\.)gemini\.google\.com$/.test(host);
 }
 
 
@@ -160,8 +188,11 @@ function segmentPage() {
   let chunks = [];
 
   if (isChatGPT()) {
-    chunks = segmentPage_chat();
+    chunks = segmentPage_chatgpt();
     console.log("Detected ChatGPT chat layout:", chunks.length, "chunks output");
+  } else if (isGemini()) {
+    chunks = segmentPage_gemini();
+    console.log("Detected Gemini chat layout:", chunks.length, "chunks output");
   } else if (/wikipedia\.org|readthedocs\.io|mdn\.mozilla\.org|medium\.com/.test(location.hostname)) {
     chunks = segmentPage_heading();
     console.log("Detected heading layout:", chunks.length, "chunks output");
