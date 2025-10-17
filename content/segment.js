@@ -122,6 +122,27 @@ function segmentPage_gemini() {
   return chunks;
 }
 
+function segmentPage_qwen() {
+  // 1️⃣ 找到所有模型回复块
+  const responses = [...document.querySelectorAll(".response-message-body--normal")]
+    .filter(isVisible);
+
+  // 2️⃣ 为每个回复添加锚点并提取文本
+  const chunks = responses.map(el => {
+    const textContainer = el.querySelector(".markdown-content-container");
+    const text = textContainer ? textContainer.innerText.trim() : el.innerText.trim();
+
+    ensureAnchor(el);
+    return {
+      text,
+      anchorId: el.dataset.__ai_anchor_id,
+    };
+  }).filter(c => c.text.length > 0);
+
+  return chunks;
+}
+
+
 // 标题分段法（Wikipedia、Docs类网页）
 // 每个 chunk 最多 3000 字，超出自动拆分
 function segmentPage_heading() {
@@ -183,6 +204,12 @@ function isGemini() {
   return /(^|\.)gemini\.google\.com$/.test(host);
 }
 
+function isQwen() {
+  const host = location.hostname;
+  return /(^|\.)qwen\.ai$/.test(host);
+}
+
+
 
 function segmentPage() {
   let chunks = [];
@@ -193,6 +220,9 @@ function segmentPage() {
   } else if (isGemini()) {
     chunks = segmentPage_gemini();
     console.log("Detected Gemini chat layout:", chunks.length, "chunks output");
+  } else if (isQwen()) {
+    chunks = segmentPage_qwen();
+    console.log("Detected Qwen chat layout:", chunks.length, "chunks output");
   } else if (/wikipedia\.org|readthedocs\.io|mdn\.mozilla\.org|medium\.com/.test(location.hostname)) {
     chunks = segmentPage_heading();
     console.log("Detected heading layout:", chunks.length, "chunks output");
