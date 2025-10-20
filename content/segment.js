@@ -56,8 +56,8 @@ function segmentPage_generic() {
   // Step 2: 为每个节点添加锚点
   nodes.forEach(ensureAnchor);
   // Step 3: 合并节点为块（chunk）
-  const minLen=500;
-  const maxLen=1200;
+  const minLen=100;
+  const maxLen=3000;
   const chunks = []; // 最终输出结果
   let buf = [];
   let bufLen = 0;
@@ -163,10 +163,10 @@ function segmentPage_claude() {
 
 
 
-// 标题分段法（Wikipedia、Docs类网页）
-// 每个 chunk 最多 3000 字，超出自动拆分
+// 标题分段法（Wikipedia、Docs,博客类网页）
+// 每个 chunk 最多 3000 字，超出自动拆分，忽略小于50字的chunk
 function segmentPage_heading() {
-  const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5")].filter(isVisible);
+  const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6")].filter(isVisible);
   if (!headings.length) {
     console.warn("No headings found, fallback to generic segmentation");
     return segmentPage_generic();
@@ -174,6 +174,7 @@ function segmentPage_heading() {
 
   const chunks = [];
   const MAX_LEN = 3000; // 增加一个长度上限
+  const MIN_LEN = 50;
 
   for (let i = 0; i < headings.length; i++) {
     const current = headings[i];
@@ -193,6 +194,11 @@ function segmentPage_heading() {
 
     const fullText = [current.innerText, ...content].join("\n\n").trim();
 
+    if (!fullText) continue;
+    // 长度过小则忽略跳过（维基格式除外）
+    if (fullText.length < MIN_LEN && !/wikipedia\.org/.test(location.hostname)) continue;
+    
+
     // 如果超出上限则切块
     if (fullText.length > MAX_LEN) {
       for (let j = 0; j < fullText.length; j += MAX_LEN) {
@@ -208,7 +214,6 @@ function segmentPage_heading() {
 
   return chunks;
 }
-
 
 
 
@@ -252,12 +257,9 @@ function segmentPage() {
   } else if (isClaude()) {
     chunks = segmentPage_claude();
     console.log("Detected Claude chat layout:", chunks.length, "chunks output");
-  } else if (/wikipedia\.org|readthedocs\.io|mdn\.mozilla\.org|medium\.com/.test(location.hostname)) {
-    chunks = segmentPage_heading();
-    console.log("Detected heading layout:", chunks.length, "chunks output");
   } else {
-    chunks = segmentPage_generic();
-    console.log("Detected generic layout:", chunks.length, "chunks output");
+    chunks = segmentPage_heading();
+    console.log("Detected generic heading layout:", chunks.length, "chunks output");
   }
 
   const clean = chunks
