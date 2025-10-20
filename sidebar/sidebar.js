@@ -8,7 +8,6 @@ loadingDiv.textContent = "";
 loadingDiv.style.cssText = `
   padding: 10px;
   color: gray;
-  font-style: italic;
   text-align: center;
 `;
 document.body.prepend(loadingDiv);
@@ -74,7 +73,7 @@ chrome.runtime.onMessage.addListener((msg) => {
     } else if (msg.status === "ready") {
       loadingDiv.textContent = "Generating Summary...";
     } else if (msg.status === "finish") {
-      loadingDiv.textContent = "Generating Finished!";
+      loadingDiv.textContent = "Created by TOCwise";
     }
   }
 });

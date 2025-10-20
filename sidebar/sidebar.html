@@ -1,17 +1,28 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8"/>
+    <title>TOCwise</title>
     <link rel="stylesheet" href="sidebar.css"/>
-    <title>AI Outline</title>
   </head>
   <body>
     <div class="head">
-      <h2>AI Table of Content</h2>
-      <button id="refresh">🔄Regenerate</button>
-      <button id="checkUpdate">➕Update</button>
+      <div class="title">
+        <h2>TOCwise</h2>
+        <p class="subtitle">with Gemini Nano</p>
+      </div>
+      <div class="buttons">
+        <button id="refresh" title="Regenerate">
+          <img src="../icons/refresh.svg" alt="Regenerate" />
+        </button>
+        <button id="checkUpdate" title="Update">
+          <img src="../icons/update.svg" alt="Update" />
+        </button>        
+      </div>      
     </div>
+
     <ul id="list"></ul>
+
     <script src="sidebar.js"></script>
   </body>
 </html>

@@ -1,84 +1,130 @@
-/* 侧边栏整体样式 - 适应side panel的垂直布局 */
-body { 
-  font: 14px/1.4 system-ui, sans-serif; 
-  margin: 0; 
-  padding: 16px; 
-  height: 100vh; 
-  background: #f8f9fa; 
-  overflow-y: auto; 
+/* === Base Layout === */
+body {
+  font-family: "Roboto", system-ui, sans-serif;
+  font-size: 14px;
+  margin: 0;
+  padding: 16px;
+  height: 100vh;
+  background: #F6F6F9; /* 更中性，提升层次 */
+  color: #1D1B20;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
-/* 顶部标题栏 */
-.head { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  margin-bottom: 16px; 
-  padding: 12px; 
-  background: white; 
-  border-radius: 8px; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+/* === Header === */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #EDE7F6; /* 柔和紫调，主色块 */
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
 }
 
-/* 刷新按钮 */
-#refresh { 
-  padding: 6px 12px; 
-  background: #007bff; 
-  color: white; 
-  border: none; 
-  border-radius: 4px; 
-  cursor: pointer; 
-  font-size: 12px; 
+.title h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1b1d; /* Material 深紫文字 */
 }
 
-/* 目录列表 */
-#list { 
-  list-style: none; 
-  padding: 0; 
-  margin: 0; 
+.subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #1c1b1d;
 }
 
-/* 目录项样式 */
-.item { 
-  padding: 12px; 
-  margin-bottom: 8px; 
-  background: white; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  border: 1px solid #e9ecef; 
-  transition: all 0.2s; 
-}
-
-/* 当前激活的目录项 */
-.item.active { 
-  background: #e3f2fd; 
-  border-color: #007bff; 
-}
-
-/* 目录标题 */
-.item .t { 
-  font-weight: 600; 
-  color: #333; 
-}
-
-/* 目录描述 */
-.item .s { 
-  opacity: 0.7; 
-  font-size: 12px; 
-  color: #666; 
-}
-
-/* 顶部按钮样式（统一刷新和检查更新） */
-.head button {
-  margin-left: 6px;
-  padding: 6px 10px;
-  background: #007bff;
-  color: white;
+/* === Buttons === */
+.buttons button {
+  margin-left: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
   border: none;
-  border-radius: 4px;
+  border-radius: 15px;
   cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.head button:hover {
-  background: #0056b3;
+/* 主按钮：深紫色 */
+#refresh {
+  background: #6750A4;
+  color: #fff;
 }
+#refresh:hover {
+  background: #d1c7fa;
+  box-shadow: 0 2px 4px rgba(79,55,139,0.3);
+}
+#refresh:hover img {
+  content: url("../icons/refresh_hover.svg");
+}
+
+/* 次按钮：浅紫灰 */
+#checkUpdate {
+  background: #cdb0fc;
+  color: #4F378B;
+}
+#checkUpdate:hover {
+  background: #6442d6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+#checkUpdate:hover img {
+  content: url("../icons/update_hover.svg");
+}
+
+/* === TOC List === */
+#list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* === TOC Item === */
+.item {
+  background: #FFFBFE;               /* Material 3 surface 颜色 */
+  border-radius: 15px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border-left: 4px solid transparent;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: all 0.25s ease;        /* 平滑动画 */
+}
+
+/* Hover 效果 */
+.item:hover {
+  background: #ebe3e9;               /* 浅紫 hover 背景 */
+  box-shadow: 0 3px 6px rgba(103,80,164,0.12);
+}
+
+/* 标题文字 */
+.item .t {
+  font-family: "Roboto", system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: #1D1B20;                    /* 深灰主文字色 */
+  text-shadow: 0 0 0.3px rgba(0,0,0,0.2); /* 提升对比度 */
+  line-height: 1.4;
+}
+
+.item.active {
+  border-left-color: #6750A4;       /* 主紫边条 */
+  background: #E8DEF8;              /* 高亮块 */
+  box-shadow: 0 2px 5px rgba(103,80,164,0.15);
+}
+
+.item.active .t {
+  font-weight: 600;
+}
+
+
+
+
+
+
+
+
+
