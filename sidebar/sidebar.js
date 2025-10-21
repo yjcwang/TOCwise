@@ -99,7 +99,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       loadingDiv.textContent = "🚀 Initializing Gemini Nano AI...";
       loadingDiv.style.display = "block";
     } else if (msg.status === "failed") {
-      loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles.";
+      loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles. Open and Enable ➡️ chrome://flags/#prompt-api-for-gemini-nano 🔁 Close and Reload Chrome";
     } else if (msg.status === "ready") {
       loadingDiv.textContent = "Generating Summary...";
     } else if (msg.status === "finish") {
