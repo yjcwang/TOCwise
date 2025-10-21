@@ -76,11 +76,14 @@ body {
 
 /* 暗色模式按钮：深紫色 */
 #toggleTheme {
-  background: #343c4e;
+  background: #07011d;
 }
 #toggleTheme:hover {
-  background: #07011d;
+  background: #c7c9ca;
   box-shadow: 0 2px 4px rgba(79,55,139,0.3);
+}
+#toggleTheme:hover img {
+  content: url("../icons/moon_hover.svg");
 }
 
 /* === TOC List === */
@@ -188,8 +191,8 @@ body.dark .item:hover {
 }
 
 body.dark .item.active {
-  background: #3f3f3f;
-  border-left-color: #bb86fc;
+  background: #3c2f60;
+  border-left-color: #caacfb;
 }
 
 body.dark .item.active .t {
@@ -223,11 +226,14 @@ body.dark #checkUpdate:hover img {
 }
 
 body.dark #toggleTheme {
-  background: #343c4e;
+  background: #07011d;
 }
 body.dark #toggleTheme:hover {
-  background: #07011d;
+  background: #c7c9ca;
   box-shadow: 0 2px 4px rgba(79,55,139,0.3);
+}
+body.dark #toggleTheme:hover img {
+  content: url("../icons/sun_hover.svg");
 }
 
 
