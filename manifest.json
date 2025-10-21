@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "TOC Gemini Nano AI",
+  "name": "TOCwise",
   "version": "1.0.0",
-  "description": "AI-powered Chrome extension with Gemini Nano integration",
+  "description": "TOC for Chatbots and articles powered by Gemini Nano",
   "permissions": ["sidePanel"],
   "host_permissions": ["<all_urls>"],
   "background": {
