@@ -68,10 +68,19 @@ body {
 }
 #checkUpdate:hover {
   background: #6442d6;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(79,55,139,0.3);
 }
 #checkUpdate:hover img {
   content: url("../icons/update_hover.svg");
+}
+
+/* 暗色模式按钮：深紫色 */
+#toggleTheme {
+  background: #343c4e;
+}
+#toggleTheme:hover {
+  background: #07011d;
+  box-shadow: 0 2px 4px rgba(79,55,139,0.3);
 }
 
 /* === TOC List === */
@@ -119,6 +128,108 @@ body {
 .item.active .t {
   font-weight: 600;
 }
+
+/*暗色模式*/
+
+.theme-row {
+  text-align: right;
+}
+
+.theme-row button {
+  background: #dcd4f7;
+  border: none;
+  border-radius: 15px;
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+}
+
+.theme-row button img {
+  width: 18px;
+  height: 18px;
+  position: relative;
+  top: 1px; /* 微调垂直对齐 */
+}
+
+
+
+body.dark {
+  background: #1e1e1e;
+  color: #e6e6e6;
+}
+
+body.dark .head {
+  background: #2b2b2b;
+  color: #fff;
+}
+
+body.dark .title h2,
+body.dark .subtitle {
+  color: #e6e6e6;
+}
+
+body.dark .item {
+  background: #2a2a2a;
+  color: #ddd;
+}
+
+body.dark .item .t {
+  font-family: "Roboto", system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: #ddd;                    /* 深灰主文字色 */
+  text-shadow: 0 0 0.3px rgba(0,0,0,0.2); /* 提升对比度 */
+  line-height: 1.4;
+}
+
+body.dark .item:hover {
+  background: #383838;
+}
+
+body.dark .item.active {
+  background: #3f3f3f;
+  border-left-color: #bb86fc;
+}
+
+body.dark .item.active .t {
+  font-weight: 600;
+}
+
+/* 主按钮：深紫色 */
+body.dark #refresh {
+  background: #6750A4;
+  color: #fff;
+}
+body.dark #refresh:hover {
+  background: #d1c7fa;
+  box-shadow: 0 2px 4px rgba(79,55,139,0.3);
+}
+body.dark #refresh:hover img {
+  content: url("../icons/refresh_hover.svg");
+}
+
+/* 次按钮：浅紫灰 */
+body.dark #checkUpdate {
+  background: #cdb0fc;
+  color: #4F378B;
+}
+body.dark #checkUpdate:hover {
+  background: #6442d6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+body.dark #checkUpdate:hover img {
+  content: url("../icons/update_hover.svg");
+}
+
+body.dark #toggleTheme {
+  background: #343c4e;
+}
+body.dark #toggleTheme:hover {
+  background: #07011d;
+  box-shadow: 0 2px 4px rgba(79,55,139,0.3);
+}
+
 
 
 

@@ -160,5 +160,23 @@ checkBtn.onclick = async () => {
   }
 };
 
+// dark mode 暗色模式
+const themeBtn = document.getElementById("toggleTheme");
+
+// 初始化时读取主题
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme") || "light";
+  document.body.classList.toggle("dark", savedTheme === "dark");
+  themeBtn.querySelector("img").src = savedTheme === "dark" ? "../icons/sun.svg" : "../icons/moon.svg";
+});
+
+// 切换主题
+themeBtn.onclick = () => {
+  const isDark = document.body.classList.toggle("dark");
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  themeBtn.querySelector("img").src = isDark ? "../icons/sun.svg" : "../icons/moon.svg";
+};
+
+
 
 
