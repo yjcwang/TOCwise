@@ -2,6 +2,7 @@
 // 运行在后台、不直接操作网页，
 // 用于监听事件、管理扩展状态、与内容脚本通信。
 
+
 // 扩展安装时初始化
 chrome.runtime.onInstalled.addListener(() => {
   // 设置点击扩展图标时自动打开侧边栏
@@ -14,9 +15,3 @@ chrome.action.onClicked.addListener(async (tab) => {
   await chrome.sidePanel.open({ tabId: tab.id });
 });
 
-// 监听来自内容脚本的消息
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // 这里可以处理扩展内部的消息通信
-  console.log('Background received:', request);
-});
-  

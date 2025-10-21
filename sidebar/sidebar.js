@@ -12,6 +12,33 @@ loadingDiv.style.cssText = `
 `;
 document.body.prepend(loadingDiv);
 
+// 缓存与当前tab
+const outlineCache = {};   // { [tabId: number]: { outlines: Array } }
+let currentTabId = null;   // 当前侧栏正在展示的 tabId
+
+// 按 tab 加载目录（先缓存、再请求）
+async function loadOutlineForTab(tabId) {
+  currentTabId = tabId;
+  console.log("sidebar: switch to tab", tabId);
+
+  // 1) 命中缓存 → 直接渲染
+  if (outlineCache[tabId]) {
+    console.log("sidebar: using cached outline");
+    render(outlineCache[tabId].outlines);
+    return;
+  }
+
+  // 2) 未命中 → 请求 content
+  try {
+    const res = await chrome.tabs.sendMessage(tabId, { type: "getOutline" });
+    outlineCache[tabId] = res;           // 写入缓存
+    render(res.outlines);
+  } catch (err) {
+    console.warn("sidebar: getOutline failed (no content script yet?)", err);
+    ul.innerHTML = "<li class='item'>（Content not loaded, try refresh website）</li>";
+  }
+}
+
 //获取当前标签页
 async function getActiveTabId() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -58,11 +85,14 @@ async function tickActive() {
 }
 // 监听ai标题更新，刷新显示
 // 监听 API 统一是 runtime.onMessage
-chrome.runtime.onMessage.addListener((msg) => {
+chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.type === "aiOutlineUpdated") {
     // 增量更新，重新取一次
     console.log("sidebar: aiOutline Updated");
-    fetchOutline().then(res => render(res.outlines));
+    const tabId = await getActiveTabId();         // 拿到当前侧栏对应的 tab
+    const res = await fetchOutline();             // 重新取最新
+    outlineCache[tabId] = res;                    // ✅ 写入缓存
+    render(res.outlines);
   }
   if (msg.type === "aiStatus") {
     if (msg.status === "loading" || msg.status === "downloading") {
@@ -78,13 +108,28 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
+// ✅ 新增：监听切换到其它 tab 时，自动切换目录
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  if (activeInfo.tabId !== currentTabId) {
+    await loadOutlineForTab(activeInfo.tabId);
+  }
+});
+
+// ✅ 新增：监听同 tab 内的导航/刷新
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (tabId === currentTabId && changeInfo.status === "complete") {
+    // URL/DOM 变化 → 清掉旧缓存，重新拉取
+    delete outlineCache[tabId];
+    await loadOutlineForTab(tabId);
+  }
+});
+
 //页面初始化
 document.addEventListener("DOMContentLoaded", async () => {
   //获取目录
   console.log("sidebar: init outline");
-  const res = await fetchOutline();
-  //渲染目录
-  render(res.outlines);
+  const tabId = await getActiveTabId();
+  await loadOutlineForTab(tabId);   
   // 每600ms自动高亮当前章节
   setInterval(tickActive, 600);
 });
