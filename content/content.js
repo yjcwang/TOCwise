@@ -5,7 +5,7 @@ const style = document.createElement("style");
 style.textContent = `
   .ai-flash-marker {
     height: 2px;
-    background:rgb(255, 119, 0); /* 纯蓝色 */
+    background:rgba(140, 0, 255, 0.53);
     opacity: 1;
     margin: 0; /* 去掉上下间距避免文字跳动 */
     pointer-events: none;  /* 不挡点击 */
