@@ -34,11 +34,30 @@ async function loadOutlineForTab(tabId) {
   // 2) 未命中 → 请求 content
   try {
     const res = await chrome.tabs.sendMessage(tabId, { type: "getOutline" });
-    outlineCache[tabId] = res;           // 写入缓存
+    outlineCache[tabId] = {
+      outlines: res.outlines,
+      pinnedSet: new Set()
+    };           // 写入缓存
     render(res.outlines);
   } catch (err) {
     console.warn("sidebar: getOutline failed (no content script yet?)", err);
-    ul.innerHTML = "<li class='item'>（Content not loaded, try refresh website）</li>";
+    // ✅ 改进：显示可点击的“刷新网页”提示
+    ul.innerHTML = `
+    <li class="item" style="text-align:center; padding:10px;">
+      <div>Reload Website to load TOCwise</div>
+      <button id="reloadPageBtn" class="reload-btn">
+        <img src="../icons/reload.svg" alt="refresh" width="18" height="18" style="vertical-align:middle;">
+      </button>
+    </li>
+  `;
+    // ✅ 按钮点击：刷新当前标签页
+    const btn = document.getElementById("reloadPageBtn");
+    if (btn) {
+      btn.onclick = async () => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        chrome.tabs.reload(tab.id); // 自动刷新网页
+      };
+    }
   }
 }
 
@@ -55,29 +74,58 @@ async function fetchOutline() {
   return chrome.tabs.sendMessage(tabId, { type: "getOutline" });
 }
 
-//渲染目录
+// 渲染目录
 function render(outlines) {
   console.log("sidebar: render");
   ul.innerHTML = "";
+
+  // 从缓存中取出当前 tab 的 pinnedSet
+  const pinnedSet = outlineCache[currentTabId]?.pinnedSet || new Set();
+
   // 把每个标题渲染成一个 <li>
   for (const o of outlines) {
     const li = document.createElement("li");
-    li.className = "item";
+    const isPinned = pinnedSet.has(o.anchorId);
+
+    // 样式和数据
+    li.className = `item${isPinned ? " pinned" : ""}`;
     li.dataset.anchor = o.anchorId;
-    // 加入展开按钮与摘要容器
+
+    // 内部结构：标题 + 星标
     li.innerHTML = `
       <div class="t">${o.title}</div>
-      <button class="expand">▼</button> <!-- NEW -->
-      <div class="summary" style="display:none;"></div> <!-- NEW -->
+      <img class="star" src="../icons/${isPinned ? "bookmark_pinned.svg" : "bookmark.svg"}" width="18" height="18" />
     `;
-    //点击目录标题，跳转至页面, 在content里横线标注起始和结束的段落
-    // 所以需要发送当前o.anchorId和nextAnchorId
-    const idx = outlines.indexOf(o);
-    const next = outlines[idx + 1]; // 也发送下一个chunk的anchor，可能 undefined
-    li.onclick = async () => {
-      const tabId = await getActiveTabId();
-      await chrome.tabs.sendMessage(tabId, { type: "jumpTo", anchorId: o.anchorId, nextAnchorId: next ? next.anchorId : null });
+
+    // 星标点击事件（不触发跳转）
+    li.querySelector(".star").onclick = (e) => {
+      e.stopPropagation(); // 防止触发跳转
+      const newState = !li.classList.contains("pinned");
+      li.classList.toggle("pinned", newState);
+      e.target.src = `../icons/${newState ? "bookmark_pinned.svg" : "bookmark.svg"}`;
+
+
+      // 更新缓存中的 pinnedSet
+      const set = outlineCache[currentTabId].pinnedSet;
+      if (newState) set.add(o.anchorId);
+      else set.delete(o.anchorId);
     };
+
+    // 点击目录标题 → 页面跳转
+    const idx = outlines.indexOf(o);
+    const next = outlines[idx + 1];
+    // 点击整行（除了星标）都跳转
+    li.onclick = async (e) => {
+      if (e.target.classList.contains("star")) return; // ✅ 点击星标不跳转
+      const tabId = await getActiveTabId();
+      await chrome.tabs.sendMessage(tabId, {
+        type: "jumpTo",
+        anchorId: o.anchorId,
+        nextAnchorId: next ? next.anchorId : null
+      });
+    };
+
+
     ul.appendChild(li);
 
     //自动恢复展开状态
@@ -163,8 +211,11 @@ chrome.runtime.onMessage.addListener(async (msg) => {
     console.log("sidebar: aiOutline Updated");
     const tabId = await getActiveTabId();         // 拿到当前侧栏对应的 tab
     const res = await fetchOutline();             // 重新取最新
-    outlineCache[tabId] = res;                    // ✅ 写入缓存
+    // ✅ 只更新 outlines，不覆盖 pinnedSet
+    if (!outlineCache[tabId]) outlineCache[tabId] = { outlines: [], pinnedSet: new Set() };
+    outlineCache[tabId].outlines = res.outlines;
     render(res.outlines);
+
   }
   if (msg.type === "aiStatus") {
     if (msg.status === "loading" || msg.status === "downloading") {

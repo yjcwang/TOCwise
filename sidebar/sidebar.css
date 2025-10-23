@@ -48,6 +48,27 @@ body {
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* === Reload Button， script未加载成功的刷新按钮 === */
+.reload-btn {
+  display: inline-flex;          
+  align-items: center;    
+  margin-left: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  background: #6750a4;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reload-btn:hover {
+  background: #7c66d6;
+  box-shadow: 0 2px 5px rgba(103,80,164,0.25);
+}
+
+
 /* 主按钮：深紫色 */
 #refresh {
   background: #6750A4;
@@ -95,6 +116,9 @@ body {
 
 /* === TOC Item === */
 .item {
+  display: flex;                     
+  justify-content: space-between;    
+  align-items: center;  
   background: #FFFBFE;               /* Material 3 surface 颜色 */
   border-radius: 15px;
   margin-bottom: 10px;
@@ -121,6 +145,24 @@ body {
   text-shadow: 0 0 0.3px rgba(0,0,0,0.2); /* 提升对比度 */
   line-height: 1.4;
 }
+
+/*星标*/
+.item .star {
+  width: 18px;
+  height: 18px;
+  visibility: hidden;
+  cursor: pointer;
+}
+
+.item:hover .star {
+  visibility: visible;
+}
+
+.item.pinned .star {
+  visibility: visible;
+}
+
+
 
 .item.active {
   border-left-color: #6750A4;       /* 主紫边条 */
@@ -268,6 +310,9 @@ body.dark #toggleTheme:hover img {
   color: #555;
   line-height: 1.5;
 }
+
+
+
 
 
 
