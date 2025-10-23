@@ -95,6 +95,9 @@ body {
 
 /* === TOC Item === */
 .item {
+  display: flex;                     
+  justify-content: space-between;    
+  align-items: center;  
   background: #FFFBFE;               /* Material 3 surface 颜色 */
   border-radius: 15px;
   margin-bottom: 10px;
@@ -121,6 +124,24 @@ body {
   text-shadow: 0 0 0.3px rgba(0,0,0,0.2); /* 提升对比度 */
   line-height: 1.4;
 }
+
+/*星标*/
+.item .star {
+  width: 18px;
+  height: 18px;
+  visibility: hidden;
+  cursor: pointer;
+}
+
+.item:hover .star {
+  visibility: visible;
+}
+
+.item.pinned .star {
+  visibility: visible;
+}
+
+
 
 .item.active {
   border-left-color: #6750A4;       /* 主紫边条 */
@@ -235,6 +256,9 @@ body.dark #toggleTheme:hover {
 body.dark #toggleTheme:hover img {
   content: url("../icons/sun_hover.svg");
 }
+
+
+
 
 
 
