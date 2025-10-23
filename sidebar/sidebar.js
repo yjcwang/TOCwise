@@ -93,9 +93,14 @@ function render(outlines) {
 
     // 内部结构：标题 + 星标
     li.innerHTML = `
-      <div class="t">${o.title}</div>
-      <img class="star" src="../icons/${isPinned ? "bookmark_pinned.svg" : "bookmark.svg"}" width="18" height="18" />
-    `;
+  <div class="t">${o.title}</div>
+  <div class="icons">
+    <img class="star" src="../icons/${isPinned ? "bookmark_pinned.svg" : "bookmark.svg"}" width="18" height="18" />
+    <button class="expand">▼</button>
+  </div>
+  <div class="summary" style="display:none;"></div>
+`;
+
 
     // 星标点击事件（不触发跳转）
     li.querySelector(".star").onclick = (e) => {
