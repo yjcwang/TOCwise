@@ -48,6 +48,27 @@ body {
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* === Reload Button， script未加载成功的刷新按钮 === */
+.reload-btn {
+  display: inline-flex;          
+  align-items: center;    
+  margin-left: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  background: #6750a4;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reload-btn:hover {
+  background: #7c66d6;
+  box-shadow: 0 2px 5px rgba(103,80,164,0.25);
+}
+
+
 /* 主按钮：深紫色 */
 #refresh {
   background: #6750A4;

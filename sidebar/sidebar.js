@@ -38,7 +38,23 @@ async function loadOutlineForTab(tabId) {
     render(res.outlines);
   } catch (err) {
     console.warn("sidebar: getOutline failed (no content script yet?)", err);
-    ul.innerHTML = "<li class='item'>（Content not loaded, try refresh website）</li>";
+    // ✅ 改进：显示可点击的“刷新网页”提示
+    ul.innerHTML = `
+    <li class="item" style="text-align:center; padding:10px;">
+      <div>Reload Website to load TOCwise</div>
+      <button id="reloadPageBtn" class="reload-btn">
+        <img src="../icons/reload.svg" alt="refresh" width="18" height="18" style="vertical-align:middle;">
+      </button>
+    </li>
+  `;
+    // ✅ 按钮点击：刷新当前标签页
+    const btn = document.getElementById("reloadPageBtn");
+    if (btn) {
+      btn.onclick = async () => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        chrome.tabs.reload(tab.id); // 自动刷新网页
+      };
+    }
   }
 }
 
