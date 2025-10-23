@@ -1,5 +1,8 @@
 const ul = document.getElementById("list");
 const refreshBtn = document.getElementById("refresh");
+const summaryCache = {}; // 缓存每个chunk的概览
+const summaryState = {}; // 记录概览展开状态
+
 
 // 初始化AI提示样式
 const loadingDiv = document.createElement("div");
@@ -61,7 +64,12 @@ function render(outlines) {
     const li = document.createElement("li");
     li.className = "item";
     li.dataset.anchor = o.anchorId;
-    li.innerHTML = `<div class="t">${o.title}</div>`;
+    // 加入展开按钮与摘要容器
+    li.innerHTML = `
+      <div class="t">${o.title}</div>
+      <button class="expand">▼</button> <!-- NEW -->
+      <div class="summary" style="display:none;"></div> <!-- NEW -->
+    `;
     //点击目录标题，跳转至页面, 在content里横线标注起始和结束的段落
     // 所以需要发送当前o.anchorId和nextAnchorId
     const idx = outlines.indexOf(o);
@@ -71,8 +79,72 @@ function render(outlines) {
       await chrome.tabs.sendMessage(tabId, { type: "jumpTo", anchorId: o.anchorId, nextAnchorId: next ? next.anchorId : null });
     };
     ul.appendChild(li);
+
+    //自动恢复展开状态
+    if (summaryState[o.anchorId]) {
+      const btn = li.querySelector(".expand");
+      const summaryDiv = li.querySelector(".summary");
+      summaryDiv.innerHTML = summaryCache[o.anchorId] || "";
+      summaryDiv.style.display = "block";
+      btn.textContent = "▲";
+    }
+
+    // 展开/折叠逻辑 
+    li.querySelector(".expand").onclick = async (ev) => {
+      ev.stopPropagation(); // 避免触发跳转
+      const btn = li.querySelector(".expand");
+      const summaryDiv = li.querySelector(".summary");
+      const anchorId = o.anchorId;
+      
+      //折叠
+      if (summaryDiv.style.display === "block") {
+        summaryDiv.style.display = "none";
+        btn.textContent = "▼";
+        summaryState[anchorId] = false;
+        return;
+      }
+      //展开
+      if (summaryCache[anchorId]) {
+        summaryDiv.innerHTML = summaryCache[anchorId];
+        summaryDiv.style.display = "block";
+        btn.textContent = "▲";
+        summaryState[anchorId] = true;
+        return;
+      }
+
+      // 请求AI生成摘要
+      summaryDiv.innerHTML = "<i>Generating summary...</i>";
+      btn.disabled = true;
+      const tabId = await getActiveTabId();
+      //从 content.js 获取原文 chunk 文本
+      const { text } = await chrome.tabs.sendMessage(tabId, {
+        type: "getChunkText",
+        anchorId
+      });
+      const bullets = await summarizeChunk(text);
+      const html = `<ul>${bullets.map(b => `<li>${b}</li>`).join("")}</ul>`;
+      summaryCache[anchorId] = html;
+      summaryDiv.innerHTML = html;
+      summaryDiv.style.display = "block";
+      btn.textContent = "▲";
+      btn.disabled = false;
+      summaryState[anchorId] = true;
+    };
+  }
+
+}
+
+// 调用 llm.js 的 bullet 模式生成摘要
+async function summarizeChunk(text) {
+  try {
+    const { generateBullets } = await import(chrome.runtime.getURL("ai/llm.js"));
+    return await generateBullets(text);
+  } catch (err) {
+    console.warn("sidebar: summarizeChunk failed", err);
+    return ["Summary unavailable"];
   }
 }
+
 //自动高亮当前章节：寻找最接近视窗顶部锚点，高亮对应标题
 async function tickActive() {
   const tabId = await getActiveTabId();

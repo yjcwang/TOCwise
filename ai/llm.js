@@ -1,7 +1,36 @@
 // ai/llm.js
 
 let cachedSummarizer = null; // 全局缓存 Summarizer 实例
+let cachedSummarizerBullet = null; // 全局缓存 Summarizer 实例
 
+ // 检查Summarizer可用性
+async function checkSummarizer() {
+  let canUseSummarizer = false;
+  if ("Summarizer" in self) {
+    try {
+      const availability = await Summarizer.availability();
+      console.log("llm: api availability is", availability);
+
+      if (availability === "downloading") {
+        console.warn("Downloading Gemini Nano... Please wait...");
+        chrome.runtime.sendMessage({ type: "aiStatus", status: "downloading" });
+        alert("Downloading Gemini Nano... Please wait for some seconds...");
+        return false;
+      }
+      if (availability !== "unavailable") canUseSummarizer = true;
+    } catch {
+      canUseSummarizer = false;
+    }
+  }
+
+  if (!canUseSummarizer) {
+    console.log("llm: fall back");
+    chrome.runtime.sendMessage({ type: "aiStatus", status: "failed" });
+    return false;
+  } else return true;
+}
+
+// 生成标题
 export async function generateTitles(textArray) {
   if (!Array.isArray(textArray)) return [];
 
@@ -24,28 +53,12 @@ export async function generateTitles(textArray) {
 
   // 通知sidebar开始初始化ai
   chrome.runtime.sendMessage({ type: "aiStatus", status: "loading" });
-  
-  // 检查Summarizer可用性
-  let canUseSummarizer = false;
-  if ("Summarizer" in self) {
-    try {
-      const availability = await Summarizer.availability();
-      console.log("llm: api availability is", availability);
 
-      if (availability === "downloading") {
-        console.warn("Downloading Gemini Nano... Please wait...");
-        chrome.runtime.sendMessage({ type: "aiStatus", status: "downloading" });
-        alert("Downloading Gemini Nano... Please wait for some seconds...");
-        return textArray.map(fallbackTitle);
-      }
-      if (availability !== "unavailable") canUseSummarizer = true;
-    } catch {
-      canUseSummarizer = false;
-    }
-  }
 
-  if (!canUseSummarizer) {
-    console.log("llm: fall back");
+ // 检查Summarizer可用性
+  const ok = await checkSummarizer();
+  if(!ok) {
+    console.warn("Gemini Nano unavailable for summarization");
     chrome.runtime.sendMessage({ type: "aiStatus", status: "failed" });
     return textArray.map(fallbackTitle);
   }
@@ -77,7 +90,7 @@ export async function generateTitles(textArray) {
   return results;
 }
 
-// 提取批量生成逻辑，方便复用
+// 批量复用生成标题
 async function summarizeBatch(summarizer, textArray, fallbackTitle) {
   const results = [];
   for (const text of textArray) {
@@ -113,3 +126,71 @@ async function summarizeBatch(summarizer, textArray, fallbackTitle) {
 export function resetSummarizer() {
   cachedSummarizer = null;
 }
+
+
+// 生成 bullet-point 摘要
+export async function generateBullets(text) {
+
+  // Summarizer 已经初始化 → 直接复用
+  if (cachedSummarizerBullet) {
+    console.log("llm: reuse cached summarizer");
+    chrome.runtime.sendMessage({ type: "aiStatus", status: "ready" });
+    const results = await bulletsBatch(cachedSummarizerBullet, text);
+    chrome.runtime.sendMessage({ type: "aiStatus", status: "finish" });
+    return results;
+  }
+
+  // 通知sidebar开始初始化ai
+  chrome.runtime.sendMessage({ type: "aiStatus", status: "loading" });
+
+  const ok = await checkSummarizer();
+  if (!ok) {
+    console.warn("Gemini Nano unavailable for bullet summarization");
+    chrome.runtime.sendMessage({ type: "aiStatus", status: "failed" });
+    return ["Local Gemini Nano unavailable. Please enable it in Chrome settings."];
+  }
+
+  console.log("llm: init ai");
+  try {
+    cachedSummarizerBullet = await Summarizer.create({
+      type: "key-points",
+      format: "plain-text",
+      length: "short",
+      expectedInputs: [
+            { type: "text", languages: ["en" /* system prompt */, "en" /* user prompt */] }
+        ],
+      expectedOutputs: [
+            { type: "text", languages: ["en"] }
+        ],
+    });
+  } catch (err){
+    chrome.runtime.sendMessage({ type: "aiStatus", status: "failed" });
+    console.error("Error details:", err);
+    return ["Failed to summarize"];
+  }
+
+  chrome.runtime.sendMessage({ type: "aiStatus", status: "ready" });
+  const results = await bulletsBatch(cachedSummarizerBullet, text);
+  chrome.runtime.sendMessage({ type: "aiStatus", status: "finish" });
+  return results;
+}
+
+// 批量复用生成bullet points
+async function bulletsBatch(summarizer, text){
+  try {
+    let result = await summarizer.summarize(text, {
+      context:
+        "Summarize the following chat or text block into 3–5 short, clear bullet points. Output only the bullet points, one per line."
+    });
+    const output =
+      typeof result === "string" ? result :
+      (result && typeof result.output === "string" ? result.output : "");
+
+    if (!output.trim()) return ["(No summary generated)"];
+    return output.split("\n").filter(l => l.trim());
+  } catch (err) {
+    console.error("generateBullets failed", err);
+    return ["Failed to summarize"];
+  }
+}
+

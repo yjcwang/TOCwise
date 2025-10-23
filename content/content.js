@@ -134,6 +134,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     rebuildIncremental();
     sendResponse({ ok: true });
   }
+
+  // 提供chunk文本给侧栏
+  if (msg.type === "getChunkText") {
+  const chunk = state.chunks.find(c => c.anchorId === msg.anchorId);
+  sendResponse({ text: chunk?.text || "" });
+}
 });
 
 
