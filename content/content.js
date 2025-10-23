@@ -27,7 +27,7 @@ async function init() {
   state.chunks = window.segmentPage(); // 从 segment.js 来
   // 先返回占位“生成中…”
   state.outlines = state.chunks.map(({anchorId}) => ({
-    title: "生成中…",
+    title: "Generating…",
     anchorId
   }));
   // 触发首批生成
@@ -56,7 +56,7 @@ async function requestAI(start, end) {
 function requestRest() {
   
   const start = Math.min(
-    state.outlines.findIndex(o => o.title === "生成中…"),
+    state.outlines.findIndex(o => o.title === "Generating…"),
     state.outlines.length
   );
   if (start === -1) return;
@@ -68,6 +68,19 @@ function requestRest() {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   
   if (msg.type === "getOutline") { // 发 getOutline 来索要当前目录列表
+    // ✅ 若 state.outlines 还没准备好，先返回占位占位符， 防止出现sidebar一片空白情况
+    if (!state.outlines || state.outlines.length === 0) {
+      console.log("Content: outlines not ready → return placeholder");
+      const temp = window.segmentPage?.() || [];
+      const placeholder = temp.map(c => ({
+        title: "Generating…",
+        anchorId: c.anchorId
+      }));
+      sendResponse({ outlines: placeholder });
+      // 启动异步生成
+      init();
+      return;
+    }
     sendResponse({ outlines: state.outlines });
     // “生成中…”占位回给侧栏
     console.log("Content: Request Rest");
@@ -76,17 +89,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   
   if (msg.type === "jumpTo") { // 点侧栏标题 → 页面平滑跳到对应原文位置，并且标注横线
     const el = document.getElementById(msg.anchorId);
-    /* 暂时不添加跳转后向下偏移
-    if (/chat\.openai\.com/.test(location.hostname)) {
-      console.log("ChatGpt jumpTo");
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      // 自定义滚动：目标位置 - 80px 留白
-      const rect = el.getBoundingClientRect();
-      const targetY = rect.top + window.scrollY - 80;
-      window.scrollTo({ top: targetY, behavior: "smooth" });
-
-    }*/
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     
     // 插入一个临时标记线（在锚点位置）
@@ -162,7 +164,7 @@ async function rebuildIncremental() {
   const start = oldLen;
   const end = newLen;
   for (let i = start; i < end; i++) {
-    state.outlines[i] = { title: "生成中…", anchorId: newChunks[i].anchorId };
+    state.outlines[i] = { title: "Generating…", anchorId: newChunks[i].anchorId };
   }
 
   // 调用 AI 仅生成新增部分标题
