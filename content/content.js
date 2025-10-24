@@ -204,3 +204,14 @@ async function rebuildIncremental() {
     tries ++;
   }
 })();
+
+// 当页面 URL 变化（例如切换到新的 Chat）时，自动重新 init()
+let lastUrl = location.href;
+
+setInterval(() => {
+  if (location.href !== lastUrl) {
+    lastUrl = location.href;
+    console.log("Detected URL change → reInit()");
+    init(); // 重新初始化目录生成
+  }
+}, 1000);

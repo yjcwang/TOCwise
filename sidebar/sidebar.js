@@ -188,7 +188,9 @@ function render(outlines) {
       });
 
       const bullets = await summarizeChunk(text);
-      const html = `<ul>${bullets.map(b => `<li>${b}</li>`).join("")}</ul>`;
+      // 去掉每行前面的 * 或 • 等符号
+      const cleaned = bullets.map(b => b.replace(/^[*\s•-]+/, "").trim());
+      const html = `<ul>${cleaned.map(b => `<li>${b}</li>`).join("")}</ul>`;
       summaryCache[anchorId] = html;
       summaryDiv.innerHTML = html;
       li.classList.add("expanded"); // ✅ 动画展开
