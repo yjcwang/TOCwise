@@ -5,7 +5,7 @@ body {
   margin: 0;
   padding: 16px;
   height: 100vh;
-  background: #F6F6F9; /* 更中性，提升层次 */
+  background: #F6F6F9;
   color: #1D1B20;
   overflow-y: auto;
   box-sizing: border-box;
@@ -16,58 +16,49 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #EDE7F6; /* 柔和紫调，主色块 */
+  background: #EDE7F6;
   border-radius: 12px;
   padding: 12px 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   margin-bottom: 20px;
 }
 
-.title h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1c1b1d; /* Material 深紫文字 */
-}
-
+.title h2,
 .subtitle {
   margin: 0;
-  font-size: 12px;
   color: #1c1b1d;
 }
-
-/* === Buttons === */
-.buttons button {
-  margin-left: 8px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+.title h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.subtitle {
+  font-size: 12px;
 }
 
-/* === Reload Button， script未加载成功的刷新按钮 === */
+/* === Buttons (通用按钮) === */
+.buttons button,
 .reload-btn {
-  display: inline-flex;          
-  align-items: center;    
-  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 6px 14px;
   font-size: 13px;
   font-weight: 500;
   border: none;
   border-radius: 15px;
   cursor: pointer;
-  background: #6750a4;
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
+.reload-btn {
+  margin-left: 8px;
+  background: #6750a4;
+}
 .reload-btn:hover {
   background: #7c66d6;
   box-shadow: 0 2px 5px rgba(103,80,164,0.25);
 }
-
 
 /* 主按钮：深紫色 */
 #refresh {
@@ -95,7 +86,7 @@ body {
   content: url("../icons/update_hover.svg");
 }
 
-/* 暗色模式按钮：深紫色 */
+/* 暗色模式按钮 */
 #toggleTheme {
   background: #07011d;
 }
@@ -116,70 +107,118 @@ body {
 
 /* === TOC Item === */
 .item {
-  display: flex;                     
-  justify-content: space-between;    
-  align-items: center;  
-  background: #FFFBFE;               /* Material 3 surface 颜色 */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  background: #FFFBFE;
   border-radius: 15px;
   margin-bottom: 10px;
   padding: 12px 14px;
+  padding-right: 28px;
   border-left: 4px solid transparent;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   cursor: pointer;
-  transition: all 0.25s ease;        /* 平滑动画 */
+  transition: all 0.25s ease;
+  position: relative;
 }
 
-/* Hover 效果 */
 .item:hover {
-  background: #ebe3e9;               /* 浅紫 hover 背景 */
+  background: #ebe3e9;
   box-shadow: 0 3px 6px rgba(103,80,164,0.12);
 }
 
-/* 标题文字 */
 .item .t {
-  font-family: "Roboto", system-ui, sans-serif;
   font-weight: 500;
   font-size: 14px;
   letter-spacing: 0.01em;
-  color: #1D1B20;                    /* 深灰主文字色 */
-  text-shadow: 0 0 0.3px rgba(0,0,0,0.2); /* 提升对比度 */
+  color: #1D1B20;
+  text-shadow: 0 0 0.3px rgba(0,0,0,0.2);
   line-height: 1.4;
+  text-align: left;
+  align-self: flex-start;
 }
 
-/*星标*/
-.item .star {
-  width: 18px;
-  height: 18px;
-  visibility: hidden;
+/* 星标与展开 */
+.item .star,
+.item .header-row .star {
+  width: 16px;
+  height: 16px;
   cursor: pointer;
+  visibility: hidden;
+  margin-right: 12px;
 }
-
-.item:hover .star {
+.item:hover .star,
+.item.pinned .star,
+.item:hover .header-row .star,
+.item.pinned .header-row .star {
   visibility: visible;
 }
 
-.item.pinned .star {
-  visibility: visible;
+.item .expand {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 6px;
+}
+.item .expand:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
+/* 摘要 */
+.item .summary {
+  max-height: 0;                 /* ✅ 默认收起 */
+  overflow: hidden;              /* ✅ 隐藏溢出 */
+  opacity: 0;                    /* ✅ 透明度初始值 */
+  margin-top: 8px;
+  padding: 0 28px 0 4px;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+  width: 100%;
+  transition: max-height 0.5s ease-out, opacity 0.4s ease-out; /* ✅ 动画 */
+}
 
+.item.expanded .summary {
+  max-height: 600px;             /* ✅ 允许足够空间 */
+  opacity: 1;
+  transition:
+    max-height 0.4s ease-in,   
+    opacity 0.3s ease-in;
+}
 
+/* 选中高亮 */
 .item.active {
-  border-left-color: #6750A4;       /* 主紫边条 */
-  background: #E8DEF8;              /* 高亮块 */
+  border-left-color: #6750A4;
+  background: #E8DEF8;
   box-shadow: 0 2px 5px rgba(103,80,164,0.15);
 }
-
 .item.active .t {
   font-weight: 600;
 }
 
-/*暗色模式*/
+/* === Header Row 布局 === */
+.item .header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.item .header-row .t {
+  flex: 1;
+  text-align: left;
+  line-height: 1.5;
+}
+.item .header-row .expand {
+  margin-left: 10px;
+  flex-shrink: 0;
+}
 
+/* === 暗色模式 === */
 .theme-row {
   text-align: right;
 }
-
 .theme-row button {
   background: #dcd4f7;
   border: none;
@@ -188,60 +227,50 @@ body {
   height: 32px;
   vertical-align: middle;
 }
-
 .theme-row button img {
   width: 18px;
   height: 18px;
   position: relative;
-  top: 1px; /* 微调垂直对齐 */
+  top: 1px;
 }
 
-
-
+/* 暗色主题整体 */
 body.dark {
   background: #1e1e1e;
   color: #e6e6e6;
 }
-
 body.dark .head {
   background: #2f2a32;
   color: #fff;
 }
-
 body.dark .title h2,
 body.dark .subtitle {
   color: #e6e6e6;
 }
-
 body.dark .item {
   background: #2a2a2a;
   color: #ddd;
 }
-
 body.dark .item .t {
-  font-family: "Roboto", system-ui, sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  letter-spacing: 0.01em;
-  color: #ddd;                    /* 深灰主文字色 */
-  text-shadow: 0 0 0.3px rgba(0,0,0,0.2); /* 提升对比度 */
-  line-height: 1.4;
+  color: #ddd;
 }
-
 body.dark .item:hover {
   background: #383838;
 }
-
 body.dark .item.active {
   background: #3c2f60;
   border-left-color: #caacfb;
 }
-
 body.dark .item.active .t {
   font-weight: 600;
 }
 
-/* 主按钮：深紫色 */
+/* 暗色模式按钮组 */
+body.dark #refresh,
+body.dark #checkUpdate,
+body.dark #toggleTheme {
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
 body.dark #refresh {
   background: #6750A4;
   color: #fff;
@@ -254,7 +283,6 @@ body.dark #refresh:hover img {
   content: url("../icons/refresh_hover.svg");
 }
 
-/* 次按钮：浅紫灰 */
 body.dark #checkUpdate {
   background: #cdb0fc;
   color: #4F378B;
@@ -276,39 +304,6 @@ body.dark #toggleTheme:hover {
 }
 body.dark #toggleTheme:hover img {
   content: url("../icons/sun_hover.svg");
-}
-
-
-/* 展开按钮与摘要样式 */
-.item {
-  position: relative;
-  padding-right: 28px; /* 给右侧按钮留空 */
-}
-
-.item .expand {
-  position: absolute;
-  right: 8px;
-  top: 10px;
-  background: none;
-  border: none;
-  color: #6750A4;
-  cursor: pointer;
-  font-size: 14px;
-  transition: transform 0.2s ease;
-}
-
-.item .expand:disabled {
-  opacity: 0.5;
-  cursor: wait;
-}
-
-.item .summary {
-  display: none;
-  margin-top: 8px;
-  padding-left: 16px;
-  font-size: 13px;
-  color: #555;
-  line-height: 1.5;
 }
 
 

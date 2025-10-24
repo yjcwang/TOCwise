@@ -43,13 +43,16 @@ async function loadOutlineForTab(tabId) {
     console.warn("sidebar: getOutline failed (no content script yet?)", err);
     // ✅ 改进：显示可点击的“刷新网页”提示
     ul.innerHTML = `
-    <li class="item" style="text-align:center; padding:10px;">
-      <div>Reload Website to load TOCwise</div>
-      <button id="reloadPageBtn" class="reload-btn">
-        <img src="../icons/reload.svg" alt="refresh" width="18" height="18" style="vertical-align:middle;">
-      </button>
+    <li class="item">
+      <div class="header-row">
+        <div class="t" style="text-align:center;">Reload Website to load TOCwise</div>
+        <button id="reloadPageBtn" class="reload-btn" style="margin-left:10px;">
+          <img src="../icons/reload.svg" alt="refresh" width="16" height="16" />
+        </button>
+      </div>
     </li>
   `;
+
     // ✅ 按钮点击：刷新当前标签页
     const btn = document.getElementById("reloadPageBtn");
     if (btn) {
@@ -92,14 +95,20 @@ function render(outlines) {
     li.dataset.anchor = o.anchorId;
 
     // 内部结构：标题 + 星标
+    // 内部结构：一行 header-row（star + 标题 + expand） + 一行 summary
     li.innerHTML = `
-  <div class="t">${o.title}</div>
-  <div class="icons">
-    <img class="star" src="../icons/${isPinned ? "bookmark_pinned.svg" : "bookmark.svg"}" width="18" height="18" />
-    <button class="expand">▼</button>
-  </div>
-  <div class="summary" style="display:none;"></div>
-`;
+    <div class="header-row">
+      <img class="star" 
+          src="../icons/${isPinned ? "bookmark_pinned.svg" : "bookmark.svg"}" 
+          width="16" height="16" />
+      <div class="t">${o.title}</div>
+      <button class="expand">
+        <img src="../icons/expand.svg" alt="expand" width="16" height="16" />
+      </button>
+    </div>
+    <div class="summary"></div>
+    `;
+
 
 
     // 星标点击事件（不触发跳转）
@@ -138,8 +147,8 @@ function render(outlines) {
       const btn = li.querySelector(".expand");
       const summaryDiv = li.querySelector(".summary");
       summaryDiv.innerHTML = summaryCache[o.anchorId] || "";
-      summaryDiv.style.display = "block";
-      btn.textContent = "▲";
+      li.classList.add("expanded"); 
+      btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
     }
 
     // 展开/折叠逻辑 
@@ -148,41 +157,43 @@ function render(outlines) {
       const btn = li.querySelector(".expand");
       const summaryDiv = li.querySelector(".summary");
       const anchorId = o.anchorId;
-      
-      //折叠
-      if (summaryDiv.style.display === "block") {
-        summaryDiv.style.display = "none";
-        btn.textContent = "▼";
+
+      // 折叠逻辑
+      if (li.classList.contains("expanded")) {
+        li.classList.remove("expanded"); // ✅ 用类控制
+        btn.innerHTML = '<img src="../icons/expand.svg" alt="expand" width="16" height="16" />';
         summaryState[anchorId] = false;
         return;
       }
-      //展开
+
+      // 展开逻辑
       if (summaryCache[anchorId]) {
         summaryDiv.innerHTML = summaryCache[anchorId];
-        summaryDiv.style.display = "block";
-        btn.textContent = "▲";
+        li.classList.add("expanded"); // ✅ 加类名触发动画
+        btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
         summaryState[anchorId] = true;
         return;
       }
 
-      // 请求AI生成摘要
+      // 生成摘要中
       summaryDiv.innerHTML = "<i>Generating summary...</i>";
       btn.disabled = true;
       const tabId = await getActiveTabId();
-      //从 content.js 获取原文 chunk 文本
       const { text } = await chrome.tabs.sendMessage(tabId, {
         type: "getChunkText",
         anchorId
       });
+
       const bullets = await summarizeChunk(text);
       const html = `<ul>${bullets.map(b => `<li>${b}</li>`).join("")}</ul>`;
       summaryCache[anchorId] = html;
       summaryDiv.innerHTML = html;
-      summaryDiv.style.display = "block";
-      btn.textContent = "▲";
+      li.classList.add("expanded"); // ✅ 动画展开
+      btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
       btn.disabled = false;
       summaryState[anchorId] = true;
     };
+
   }
 
 }
