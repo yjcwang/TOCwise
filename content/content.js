@@ -183,6 +183,7 @@ async function rebuildIncremental() {
 
 
 // 初次启动，检测到chunk数量不为0时才开始生成标题，最多等待30秒
+/*
 (async function waitForChunks() {
   console.log("content: waiting for chunks...");
   tries = 0;
@@ -203,15 +204,40 @@ async function rebuildIncremental() {
     await new Promise(r => setTimeout(r, 2000));
     tries ++;
   }
-})();
+})();*/
+
+// 等待 sidebar 打开后通知再启动
+chrome.runtime.onMessage.addListener(async (msg) => {
+  if (msg.type === "manualInit") {
+    console.log("content: manualInit received → start init()");
+    init();
+  }
+});
+
 
 // 当页面 URL 变化（例如切换到新的 Chat）时，自动重新 init()
 let lastUrl = location.href;
+let sidebarActive = false; // ✅ 标志侧栏是否开启
 
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === "manualInit") {
+    sidebarActive = true;
+    console.log("content: manualInit received → start init()");
+    init();
+  }
+  if (msg.type === "sidebarClosed") {
+    sidebarActive = false;
+    console.log("content: sidebar closed → pause auto reInit");
+  }
+});
+
+// ✅ 只有当侧栏处于开启状态时才检测 URL 变化
 setInterval(() => {
+  if (!sidebarActive) return;
   if (location.href !== lastUrl) {
     lastUrl = location.href;
     console.log("Detected URL change → reInit()");
-    init(); // 重新初始化目录生成
+    init();
   }
 }, 1000);
+

@@ -269,15 +269,23 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
-//页面初始化
+// 打开侧边栏
 document.addEventListener("DOMContentLoaded", async () => {
-  //获取目录
-  console.log("sidebar: init outline");
+  console.log("sidebar: init on open");
+
   const tabId = await getActiveTabId();
-  await loadOutlineForTab(tabId);   
-  // 每600ms自动高亮当前章节
+  // ✅ 先告诉 content 开始生成
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: "manualInit" });
+  } catch (err) {
+    console.warn("sidebar: manualInit failed, content not ready", err);
+  }
+
+  // 然后加载 outline
+  await loadOutlineForTab(tabId);
   setInterval(tickActive, 600);
 });
+
 
 //刷新按钮，重新生成标题列表
 refreshBtn.onclick = async () => {
@@ -322,6 +330,13 @@ themeBtn.onclick = () => {
   themeBtn.querySelector("img").src = isDark ? "../icons/sun.svg" : "../icons/moon.svg";
 };
 
+// ✅ 当用户关闭侧栏时，通知 content 停止自动 init
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "hidden") {
+    const tabId = await getActiveTabId();
+    chrome.tabs.sendMessage(tabId, { type: "sidebarClosed" });
+  }
+});
 
 
 
