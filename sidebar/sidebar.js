@@ -239,6 +239,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
     render(res.outlines);
 
   }
+  /*
   if (msg.type === "aiStatus") {
     if (msg.status === "loading" || msg.status === "downloading") {
       loadingDiv.textContent = "🚀 Initializing Gemini Nano AI...";
@@ -250,6 +251,10 @@ chrome.runtime.onMessage.addListener(async (msg) => {
     } else if (msg.status === "finish") {
       loadingDiv.textContent = "Created by TOCwise";
     }
+  } */
+  // 只有当ai不可用才在上方显示文字信息
+  if (msg.type === "aiStatus" && msg.status === "failed") {
+    loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles. Open and Enable ➡️ chrome://flags/#prompt-api-for-gemini-nano 🔁 Close and Reload Chrome";
   }
 });
 
@@ -290,27 +295,80 @@ document.addEventListener("DOMContentLoaded", async () => {
 //刷新按钮，重新生成标题列表
 refreshBtn.onclick = async () => {
   console.log("sidebar: click on refresh");
+  // ✅ 临时切换为旋转动画
+  const originalHTML = refreshBtn.innerHTML;
+  refreshBtn.innerHTML = `
+    <img src="../icons/loading_refresh.svg" class="loading-spin"/>
+  `;
+
+  // ✅ 禁止重复点击
+  refreshBtn.classList.add("busy");
+  refreshBtn.style.pointerEvents = "none";
+
   try {
     // 重新获取tab id
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     // 向该tab id发送信息
     await chrome.tabs.sendMessage(tab.id, { type: "reInit" });
+    // ✅ 等待 AI 生成完毕停止动画
+    await new Promise((resolve) => {
+      const listener = (msg) => {
+        if (msg.type === "aiStatus" && msg.status === "finish") {
+          chrome.runtime.onMessage.removeListener(listener);
+          resolve(); // ✅ 收到 finish 信号 → 停止旋转
+        }
+      };
+      chrome.runtime.onMessage.addListener(listener);
+    });
   } catch (err) {
     console.warn("sidebar: refresh failed, no receiver in this page", err);
   }
+  // ✅ 恢复原状态
+  refreshBtn.innerHTML = originalHTML;
+  refreshBtn.classList.remove("busy");
+  refreshBtn.style.pointerEvents = "auto";
 };
 
 
-// 检查新增 按钮绑定
+// 检查新增按钮
 const checkBtn = document.getElementById("checkUpdate");
 checkBtn.onclick = async () => {
   console.log("sidebar: click on check update");
+
+  // ✅ 临时切换为旋转动画
+  const originalHTML = checkBtn.innerHTML;
+  checkBtn.innerHTML = `
+    <img src="../icons/loading_update.svg" class="loading-spin"/>
+  `;
+  checkBtn.classList.add("busy");
+  checkBtn.style.pointerEvents = "none";
+
   try {
+    // 当前激活标签页
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     await chrome.tabs.sendMessage(tab.id, { type: "checkUpdate" });
+
+    // ✅ 等待 AI 完成 或 超时（例如 6 秒）
+    await Promise.race([
+      new Promise((resolve) => {
+        const listener = (msg) => {
+          if (msg.type === "aiStatus" && msg.status === "finish") {
+            chrome.runtime.onMessage.removeListener(listener);
+            resolve("finish");
+          }
+        };
+        chrome.runtime.onMessage.addListener(listener);
+      }),
+      new Promise((resolve) => setTimeout(() => resolve("timeout"), 6000))
+    ]);
+
   } catch (err) {
     console.warn("sidebar: check update failed", err);
   }
+  // ✅ 恢复原状态
+  checkBtn.innerHTML = originalHTML;
+  checkBtn.classList.remove("busy");
+  checkBtn.style.pointerEvents = "auto";
 };
 
 // dark mode 暗色模式
