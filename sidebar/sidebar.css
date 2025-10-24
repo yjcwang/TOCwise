@@ -264,6 +264,9 @@ body.dark .item.active {
 body.dark .item.active .t {
   font-weight: 600;
 }
+body.dark .item .summary {
+  color: #bbbaba;
+}
 
 /* 暗色模式按钮组 */
 body.dark #refresh,

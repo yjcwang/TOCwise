@@ -2,6 +2,7 @@ const ul = document.getElementById("list");
 const refreshBtn = document.getElementById("refresh");
 const summaryCache = {}; // 缓存每个chunk的概览
 const summaryState = {}; // 记录概览展开状态
+const summaryGenerated = {}; // ✅ 记录哪些 summary 已生成
 
 
 // 初始化AI提示样式
@@ -103,7 +104,8 @@ function render(outlines) {
           width="16" height="16" />
       <div class="t">${o.title}</div>
       <button class="expand">
-        <img src="../icons/expand.svg" alt="expand" width="16" height="16" />
+        <img src="../icons/${summaryCache[o.anchorId] ? "expand_a" : "expand"}.svg"
+         alt="expand" width="16" height="16" />
       </button>
     </div>
     <div class="summary"></div>
@@ -161,7 +163,8 @@ function render(outlines) {
       // 折叠逻辑
       if (li.classList.contains("expanded")) {
         li.classList.remove("expanded"); // ✅ 用类控制
-        btn.innerHTML = '<img src="../icons/expand.svg" alt="expand" width="16" height="16" />';
+        const nextIcon = summaryCache[anchorId] ? "expand_a" : "expand";
+        btn.innerHTML = `<img src="../icons/${nextIcon}.svg" alt="expand" width="16" height="16" />`;
         summaryState[anchorId] = false;
         return;
       }
