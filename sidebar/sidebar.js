@@ -181,6 +181,7 @@ function render(outlines) {
       // 生成摘要中
       summaryDiv.innerHTML = "<i>Generating summary...</i>";
       btn.disabled = true;
+      btn.innerHTML = '<img src="../icons/loading.svg" class="loading-spin" width="16" height="16" />';
       const tabId = await getActiveTabId();
       const { text } = await chrome.tabs.sendMessage(tabId, {
         type: "getChunkText",

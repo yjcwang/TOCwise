@@ -114,8 +114,9 @@ body {
   background: #FFFBFE;
   border-radius: 15px;
   margin-bottom: 10px;
-  padding: 12px 14px;
-  padding-right: 28px;
+  padding: 8px 14px;
+  padding-right: 20px;
+  padding-bottom: 4px;
   border-left: 4px solid transparent;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   cursor: pointer;
@@ -160,10 +161,11 @@ body {
   border: none;
   cursor: pointer;
   margin-left: 6px;
+  position: relative; 
+  top: 3px;
 }
 .item .expand:disabled {
-  opacity: 0.5;
-  cursor: wait;
+  cursor: pointer;
 }
 
 /* 摘要 */
@@ -208,7 +210,7 @@ body {
 .item .header-row .t {
   flex: 1;
   text-align: left;
-  line-height: 1.5;
+  line-height: 1.8;
 }
 .item .header-row .expand {
   margin-left: 10px;
@@ -308,6 +310,19 @@ body.dark #toggleTheme:hover {
 body.dark #toggleTheme:hover img {
   content: url("../icons/sun_hover.svg");
 }
+
+/* === 自定义旋转动画 === */
+.loading-spin {
+  animation: spin 1s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
 
 
 
