@@ -329,6 +329,13 @@ themeBtn.onclick = () => {
   themeBtn.querySelector("img").src = isDark ? "../icons/sun.svg" : "../icons/moon.svg";
 };
 
+// ✅ 当用户关闭侧栏时，通知 content 停止自动 init
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "hidden") {
+    const tabId = await getActiveTabId();
+    chrome.tabs.sendMessage(tabId, { type: "sidebarClosed" });
+  }
+});
 
 
 
