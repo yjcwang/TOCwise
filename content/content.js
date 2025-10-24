@@ -183,6 +183,7 @@ async function rebuildIncremental() {
 
 
 // 初次启动，检测到chunk数量不为0时才开始生成标题，最多等待30秒
+/*
 (async function waitForChunks() {
   console.log("content: waiting for chunks...");
   tries = 0;
@@ -203,7 +204,16 @@ async function rebuildIncremental() {
     await new Promise(r => setTimeout(r, 2000));
     tries ++;
   }
-})();
+})();*/
+
+// 等待 sidebar 打开后通知再启动
+chrome.runtime.onMessage.addListener(async (msg) => {
+  if (msg.type === "manualInit") {
+    console.log("content: manualInit received → start init()");
+    init();
+  }
+});
+
 
 // 当页面 URL 变化（例如切换到新的 Chat）时，自动重新 init()
 let lastUrl = location.href;
