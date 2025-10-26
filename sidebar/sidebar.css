@@ -325,7 +325,7 @@ body.dark .item .summary {
 
 body.dark .item .t.editing {
   border: 1px dashed #6750a4;
-  background: #383838;
+  background: #392d3e;
 }
 /* 暗色模式按钮组 */
 body.dark #refresh,
