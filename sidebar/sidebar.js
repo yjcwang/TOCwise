@@ -19,6 +19,8 @@ document.body.prepend(loadingDiv);
 // 缓存与当前tab
 const outlineCache = {};   // { [tabId: number]: { outlines: Array } }
 let currentTabId = null;   // 当前侧栏正在展示的 tabId
+const editedTitles = {};  // { tabId: { anchorId: "new title" } }
+
 
 // 按 tab 加载目录（先缓存、再请求）
 async function loadOutlineForTab(tabId) {
@@ -102,7 +104,10 @@ function render(outlines) {
       <img class="star" 
           src="../icons/${isPinned ? "bookmark_pinned.svg" : "bookmark.svg"}" 
           width="16" height="16" />
-      <div class="t">${o.title}</div>
+      <div class="t">${(editedTitles[currentTabId]?.[o.anchorId]) || o.title}</div>
+      <button class="edit">
+        <img src="../icons/edit.svg" alt="edit" width="16" height="16" />
+      </button>
       <button class="expand">
         <img src="../icons/${summaryCache[o.anchorId] ? "expand_a" : "expand"}.svg"
          alt="expand" width="16" height="16" />
@@ -143,6 +148,41 @@ function render(outlines) {
 
 
     ul.appendChild(li);
+
+    // === 编辑按钮逻辑 ===
+    const editBtn = li.querySelector(".edit");
+    editBtn.onclick = (ev) => {
+      ev.stopPropagation();
+      const tDiv = li.querySelector(".t");
+
+      // 如果已在编辑模式
+      if (tDiv.isContentEditable) {
+        tDiv.contentEditable = "false";
+        tDiv.classList.remove("editing");
+        editBtn.innerHTML = '<img src="../icons/edit.svg" alt="edit" width="16" height="16" />';
+        // ✅ 保存修改到缓存
+        const tabId = currentTabId;
+        if (!editedTitles[tabId]) editedTitles[tabId] = {};
+        editedTitles[tabId][o.anchorId] = tDiv.textContent.trim();
+
+        return;
+      }
+
+      // 进入编辑模式
+      tDiv.contentEditable = "true";
+      tDiv.classList.add("editing");
+      tDiv.focus();
+      editBtn.innerHTML = '<img src="../icons/save.svg" alt="save" width="16" height="16" />';
+
+      // 按 Enter 退出编辑
+      tDiv.onkeydown = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          editBtn.click();
+        }
+      };
+    };
+
 
     //自动恢复展开状态
     if (summaryState[o.anchorId]) {

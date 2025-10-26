@@ -156,6 +156,14 @@ body {
   visibility: visible;
 }
 
+.item .star:hover {
+  content: url("../icons/bookmark_hover.svg");
+}
+/*
+.item.pinned .star:hover {
+  content: url("../icons/bookmark_pinned_hover.svg");
+} */
+
 .item .expand {
   background: none;
   border: none;
@@ -166,6 +174,24 @@ body {
 }
 .item .expand:disabled {
   cursor: pointer;
+}
+
+/* 未展开（还未生成摘要）的 expand hover */
+.item .expand img[src*="expand.svg"]:hover,
+.item .expand:hover img[src*="expand.svg"] {
+  content: url("../icons/expand_hover.svg");
+}
+
+/* 已生成摘要但未展开 (expand_a.svg) hover */
+.item .expand img[src*="expand_a.svg"]:hover,
+.item .expand:hover img[src*="expand_a.svg"] {
+  content: url("../icons/expand_a_hover.svg");
+}
+
+/* 展开状态 (collapse.svg) hover */
+.item .expand img[src*="collapse.svg"]:hover,
+.item .expand:hover img[src*="collapse.svg"] {
+  content: url("../icons/collapse_hover.svg");
 }
 
 /* 摘要 */
@@ -200,6 +226,33 @@ body {
   font-weight: 600;
 }
 
+/* === 编辑模式样式 === */
+.item .t.editing {
+  border: 1px dashed #6750a4;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: #f2ecff;
+  outline: none;
+}
+.item .edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 6px;
+  position: relative;
+  top: 3px;
+}
+
+.item .edit:hover img {
+  content: url("../icons/edit_hover.svg");
+}
+
+/* 处于编辑状态（显示 save 图标时）的 hover */
+.item .edit img[src*="save.svg"]:hover,
+.item .edit:hover img[src*="save.svg"] {
+  content: url("../icons/save_hover.svg");
+}
+
 /* === Header Row 布局 === */
 .item .header-row {
   display: flex;
@@ -213,7 +266,7 @@ body {
   line-height: 1.8;
 }
 .item .header-row .expand {
-  margin-left: 10px;
+  margin-left: 1px;
   flex-shrink: 0;
 }
 
@@ -270,6 +323,10 @@ body.dark .item .summary {
   color: #bbbaba;
 }
 
+body.dark .item .t.editing {
+  border: 1px dashed #6750a4;
+  background: #383838;
+}
 /* 暗色模式按钮组 */
 body.dark #refresh,
 body.dark #checkUpdate,
@@ -321,6 +378,7 @@ body.dark #toggleTheme:hover img {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
 
 
 
