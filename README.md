@@ -1,5 +1,9 @@
-# 🌟 TOCwise – AI-Powered Table of Contents  
-![TOCwise Icon](./readme_figures/tocwise.png)
+<p align="center">
+  <img src="./readme_figures/tocwise.png" alt="TOCwise Logo" width="120"/>
+</p>
+
+<h1 align="center">TOCwise – AI-Powered Table of Contents</h1>
+
 
 **TOCwise** is an intelligent Chrome extension built on **Gemini Nano AI**, designed to make long webpages effortless to explore.  
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
