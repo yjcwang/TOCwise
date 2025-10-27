@@ -17,7 +17,7 @@ It automatically understands the structure of any page, creates a **semantic, cl
 - **💾 Smart Multi-Tab Cache** – Keeps your outlines persistent while you switch between tabs.  
 - **⚡ 100 % On-Device** – All AI processing runs locally for privacy and performance.  
 - **🔗 Precise Anchor Navigation** – Smoothly scrolls to the exact location with a single click.  
-- **📝 Inline Summaries** – Generate one-sentence summaries for individual sections on demand.  
+- **📝 Section Summaries** – Generate short summaries for individual sections on demand.  
 - **✏️ Editable Titles** – Instantly refine any heading by hand; you’re always in control.  
 - **📍 Pin Key Sections** – Keep your most important titles within reach.  
 - **🔍 Keyword Search** – Find the topic you need in a long outline in seconds.  
@@ -117,6 +117,22 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 
 ---
 
-*Make every webpage intelligently navigable. TOCwise — Your Smart Reading Companion.*
+## 🔍 Example
+
+<p align="center">
+  <img src="./readme_figures/example_1.png" alt="TOCwise Sidebar on Google Gemini" width="720"/>
+</p>
+
+<p align="center">
+  <img src="./readme_figures/example_2.png" alt="Section Summary, Editing and Pin Features" width="720"/>
+</p>
+
+<p align="center">
+  <img src="./readme_figures/example_3.png" alt="Dark Mode" width="720"/>
+</p>
+
+
+*TOCwise automatically builds an AI-generated outline in the sidebar, allowing instant navigation, editing, and summarization.*
+
 
 
