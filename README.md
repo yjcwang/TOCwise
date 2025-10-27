@@ -1,4 +1,5 @@
 # 🌟 TOCwise – AI-Powered Table of Contents  
+![TOCwise Icon](./readme_figures/tocwise.png)
 
 **TOCwise** is an intelligent Chrome extension built on **Gemini Nano AI**, designed to make long webpages effortless to explore.  
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
@@ -66,11 +67,13 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 ### Developer Mode Setup  
 
 1. **Download the project**
+   Download ZIP and extract
+   or
    ```bash
-   git clone https://github.com/your-username/TOCwise.git
+   git clone https://github.com/yjcwang/TOCwise.git
    cd TOCwise
 2. **Open Chrome Extensions**
-   - 访问Navigate to `chrome://extensions/`
+   - Navigate to `chrome://extensions/`
    - Turn on Developer Mode (top-right corner)
 
 3. **Load the Extension**
