@@ -24,9 +24,7 @@ It automatically understands the structure of any page, creates a **semantic, cl
 
 ## 🧠 How It Works  
 
----
-
-### 🧠 Architecture
+### Architecture
 
 ```
 background.js → content.js → llm.js / llm_prompt.js → sidebar.js
@@ -48,12 +46,12 @@ When the sidebar opens → `content.js` segments the page → `llm.js` names eac
 ### Adaptive Segmentation  
 TOCwise automatically selects the most effective segmentation strategy for each site:
 
-- **🤖 ChatGPT Pages** (`segmentPage_chatgpt`) – Detects `article[data-turn='assistant']`; each AI reply becomes a section.  
-- **🧠 Claude Pages** (`segmentPage_claude`) – Reads `div[data-is-streaming="false"]` to capture full responses.  
-- **💎 Gemini Pages** (`segmentPage_gemini`) – Targets `model-response` elements within `div.conversation-container`.  
-- **🌟 Qwen Pages** (`segmentPage_qwen`) – Parses `.response-message-body--normal` elements.  
-- **📚 Structured Pages** (`segmentPage_heading`) – Uses HTML headings (h1–h6) for semantic grouping.  
-- **📄 Generic Fallback** (`segmentPage_generic`) – Applies heuristics based on content length and tag type.
+- **ChatGPT Pages** (`segmentPage_chatgpt`) – Detects `article[data-turn='assistant']`; each AI reply becomes a section.  
+- **Claude Pages** (`segmentPage_claude`) – Reads `div[data-is-streaming="false"]` to capture full responses.  
+- **Gemini Pages** (`segmentPage_gemini`) – Targets `model-response` elements within `div.conversation-container`.  
+- **Qwen Pages** (`segmentPage_qwen`) – Parses `.response-message-body--normal` elements.  
+- **Structured Pages** (`segmentPage_heading`) – Uses HTML headings (h1–h6) for semantic grouping.  
+- **Generic Fallback** (`segmentPage_generic`) – Applies heuristics based on content length and tag type.
 
 ### Core Technologies  
 - **DOM Analysis** – Detects main content blocks and ignores navigation noise.  
