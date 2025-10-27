@@ -120,15 +120,21 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 ## 🔍 Example
 
 <p align="center">
-  <img src="./readme_figures/example_1.png" alt="TOCwise Sidebar on Google Gemini" width="720"/>
+  <img src="./readme_figures/example_1.png" alt="TOCwise Sidebar on Google Gemini" width="880"/>
+  <br/>
+  <em>AI-generated sidebar outline on Google Gemini page</em>
 </p>
 
 <p align="center">
-  <img src="./readme_figures/example_2.png" alt="Section Summary, Editing and Pin Features" width="720"/>
+  <img src="./readme_figures/example_2.png" alt="Section Summary, Editing and Pin Features" width="880"/>
+  <br/>
+  <em>Expandable AI Summary, inline editing, and pinning features</em>
 </p>
 
 <p align="center">
-  <img src="./readme_figures/example_3.png" alt="Dark Mode" width="720"/>
+  <img src="./readme_figures/example_3.png" alt="Dark Mode" width="880"/>
+  <br/>
+  <em>Dark mode</em>
 </p>
 
 
