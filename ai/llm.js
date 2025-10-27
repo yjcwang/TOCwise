@@ -1,9 +1,9 @@
 // ai/llm.js
 
-let cachedSummarizer = null; // 全局缓存 Summarizer 实例
-let cachedSummarizerBullet = null; // 全局缓存 Summarizer 实例
+let cachedSummarizer = null; // Global cache for Summarizer instance
+let cachedSummarizerBullet = null; // Global cache for Summarizer instance
 
- // 检查Summarizer可用性
+ // Check Summarizer availability
 async function checkSummarizer() {
   let canUseSummarizer = false;
   if ("Summarizer" in self) {
@@ -30,11 +30,11 @@ async function checkSummarizer() {
   } else return true;
 }
 
-// 生成标题
+// Generate titles
 export async function generateTitles(textArray) {
   if (!Array.isArray(textArray)) return [];
 
-  // 回退方案
+  // Fallback solution
   const fallbackTitle = (t) => {
     const s = String(t || "");
     const firstSentence = (s.split(/(?<=[。！？.!?])/)[0] || s).trim();
@@ -42,7 +42,7 @@ export async function generateTitles(textArray) {
     return { title: title || "无标题" };
   };
 
-  // Summarizer 已经初始化 → 直接复用
+  // Summarizer already initialized → reuse directly
   if (cachedSummarizer) {
     console.log("llm: reuse cached summarizer");
     chrome.runtime.sendMessage({ type: "aiStatus", status: "ready" });
@@ -51,11 +51,11 @@ export async function generateTitles(textArray) {
     return results;
   }
 
-  // 通知sidebar开始初始化ai
+  // Notify sidebar to start AI initialization
   chrome.runtime.sendMessage({ type: "aiStatus", status: "loading" });
 
 
- // 检查Summarizer可用性
+ // Check Summarizer availability
   const ok = await checkSummarizer();
   if(!ok) {
     console.warn("Gemini Nano unavailable for summarization");
@@ -63,7 +63,7 @@ export async function generateTitles(textArray) {
     return textArray.map(fallbackTitle);
   }
 
-  // 初始化 Summarizer（仅第一次执行）
+  // Initialize Summarizer (only on first execution)
   console.log("llm: init ai");
   try {
     cachedSummarizer = await Summarizer.create({
@@ -90,7 +90,7 @@ export async function generateTitles(textArray) {
   return results;
 }
 
-// 批量复用生成标题
+// Batch reuse for title generation
 async function summarizeBatch(summarizer, textArray, fallbackTitle) {
   const results = [];
   for (const text of textArray) {
@@ -101,7 +101,7 @@ async function summarizeBatch(summarizer, textArray, fallbackTitle) {
       });
       let title = String(raw || "").trim();
 
-      // 如果超过5词，重试一次
+      // If more than 5 words, retry once
       const wordCount = title.split(/\s+/).filter(Boolean).length;
       if (wordCount > 6) {
         console.warn(`Title too long (${wordCount} words): "${title}" — retrying...`);
@@ -122,16 +122,16 @@ async function summarizeBatch(summarizer, textArray, fallbackTitle) {
   return results;
 }
 
-// 可选：提供一个reset方法，供content.js刷新时使用
+// Optional: provide a reset method for content.js refresh
 export function resetSummarizer() {
   cachedSummarizer = null;
 }
 
 
-// 生成 bullet-point 摘要
+// Generate bullet-point summary
 export async function generateBullets(text) {
 
-  // Summarizer 已经初始化 → 直接复用
+  // Summarizer already initialized → reuse directly
   if (cachedSummarizerBullet) {
     console.log("llm: reuse cached summarizer");
     chrome.runtime.sendMessage({ type: "aiStatus", status: "ready" });
@@ -140,7 +140,7 @@ export async function generateBullets(text) {
     return results;
   }
 
-  // 通知sidebar开始初始化ai
+  // Notify sidebar to start AI initialization
   chrome.runtime.sendMessage({ type: "aiStatus", status: "loading" });
 
   const ok = await checkSummarizer();
@@ -175,7 +175,7 @@ export async function generateBullets(text) {
   return results;
 }
 
-// 批量复用生成bullet points
+// Batch reuse for bullet points generation
 async function bulletsBatch(summarizer, text){
   try {
     let result = await summarizer.summarize(text, {

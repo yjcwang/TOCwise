@@ -1,17 +1,17 @@
 // Service Worker ——
-// 运行在后台、不直接操作网页，
-// 用于监听事件、管理扩展状态、与内容脚本通信。
+// Runs in background, does not directly operate web pages,
+// Used for listening to events, managing extension state, and communicating with content scripts.
 
 
-// 扩展安装时初始化
+// Initialize extension on installation
 chrome.runtime.onInstalled.addListener(() => {
-  // 设置点击扩展图标时自动打开侧边栏
+  // Set to automatically open sidebar when extension icon is clicked
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 });
 
-// 处理扩展图标点击事件
+// Handle extension icon click events
 chrome.action.onClicked.addListener(async (tab) => {
-  // 在指定标签页打开侧边栏
+  // Open sidebar in specified tab
   await chrome.sidePanel.open({ tabId: tab.id });
 });
 

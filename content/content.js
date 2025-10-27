@@ -1,58 +1,58 @@
 console.log('Content script loaded');
 
-// 注入一个极简横线样式
+// Inject a minimal horizontal line style
 const style = document.createElement("style");
 style.textContent = `
   .ai-flash-marker {
     height: 2px;
     background:rgba(140, 0, 255, 0.53);
     opacity: 1;
-    margin: 0; /* 去掉上下间距避免文字跳动 */
-    pointer-events: none;  /* 不挡点击 */
+    margin: 0; /* Remove top/bottom spacing to avoid text jumping */
+    pointer-events: none;  /* Don't block clicks */
   }
 `;
 document.head.appendChild(style);
 
 const state = {
-  chunks: [],        // [{text, anchorId}] 原文分段（纯文本 + 跳转锚点）
-  outlines: []       // [{title, anchorId}] AI 结果（标题+同锚点）
+  chunks: [],        // [{text, anchorId}] Original text segments (pure text + jump anchor)
+  outlines: []       // [{title, anchorId}] AI results (title + same anchor)
 };
 
-//首屏先取前 N 段，滚动时再补
+// Get first N segments on first screen, then add more on scroll
 const FIRST_BATCH = 10;
 
-//初始化
+//Initialize
 async function init() {
   console.log("content: init");
-  state.chunks = window.segmentPage(); // 从 segment.js 来
-  // 先返回占位“生成中…”
+  state.chunks = window.segmentPage(); // From segment.js
+  // Return placeholder "Generating..." first
   state.outlines = state.chunks.map(({anchorId}) => ({
     title: "Generating…",
     anchorId
   }));
-  // 触发首批生成
+  // Trigger first batch generation
   requestAI(0, Math.min(FIRST_BATCH, state.chunks.length));
 }
 
-//AI调用
+//AI call
 async function requestAI(start, end) {
   console.log("Content: request AI",start,"to",end);
   const { generateTitles } = await import(chrome.runtime.getURL("ai/llm.js"));
   const slice = state.chunks.slice(start, end);
   const texts = slice.map(c => c.text);
-  // 输出[{title: string}]   让模型生成结果, 顺序要与输入严格一致
+  // Output [{title: string}] Let model generate results, order must strictly match input
   const results = await generateTitles(texts); 
-  // 把局部位置对齐全局位置，并写入对应锚点id
+  // Align local position with global position and write corresponding anchor id
   results.forEach((r, i) => {
     const idx = start + i;
     state.outlines[idx] = { ...r, anchorId: state.chunks[idx].anchorId };
   });
-  // 通知侧栏：start..end 这一段已经更新完，可以做增量渲染
+  // Notify sidebar: start..end segment has been updated, can do incremental rendering
   console.log("Content: Continue with AI");
   chrome.runtime.sendMessage({ type: "aiOutlineUpdated", start, end });
 }
 
-// 继续请求剩余部分，侧栏交互或滚动触发
+// Continue requesting remaining parts, triggered by sidebar interaction or scroll
 function requestRest() {
   
   const start = Math.min(
@@ -64,11 +64,11 @@ function requestRest() {
   requestAI(start, end);
 }
 
-//监听侧边栏并反应
+//Listen to sidebar and respond
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   
-  if (msg.type === "getOutline") { // 发 getOutline 来索要当前目录列表
-    // ✅ 若 state.outlines 还没准备好，先返回占位占位符， 防止出现sidebar一片空白情况
+  if (msg.type === "getOutline") { // Send getOutline to request current directory list
+    // ✅ If state.outlines is not ready yet, return placeholder first to prevent blank sidebar
     if (!state.outlines || state.outlines.length === 0) {
       console.log("Content: outlines not ready → return placeholder");
       const temp = window.segmentPage?.() || [];
@@ -77,27 +77,27 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         anchorId: c.anchorId
       }));
       sendResponse({ outlines: placeholder });
-      // 启动异步生成
+      // Start async generation
       init();
       return;
     }
     sendResponse({ outlines: state.outlines });
-    // “生成中…”占位回给侧栏
+    // "Generating..." placeholder returned to sidebar
     console.log("Content: Request Rest");
     requestRest();
   }
   
-  if (msg.type === "jumpTo") { // 点侧栏标题 → 页面平滑跳到对应原文位置，并且标注横线
+  if (msg.type === "jumpTo") { // Click sidebar title → page smoothly jumps to corresponding original text position and marks horizontal line
     const el = document.getElementById(msg.anchorId);
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     
-    // 插入一个临时标记线（在锚点位置）
-    document.querySelectorAll(".ai-flash-marker").forEach(m => m.remove()); // 先清理之前线
+    // Insert a temporary marker line (at anchor position)
+    document.querySelectorAll(".ai-flash-marker").forEach(m => m.remove()); // Clear previous lines first
     const marker = document.createElement("div");
     marker.className = "ai-flash-marker";
     el.insertAdjacentElement("afterend", marker);
     setTimeout(() => marker.remove(), 4000);
-    // 下一个锚点横线
+    // Next anchor horizontal line
     if (msg.nextAnchorId) {
       const next = document.getElementById(msg.nextAnchorId);
       if (next) {
@@ -111,8 +111,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse(true);
   }
   
-  if (msg.type === "getActiveByScroll") { // 高亮 = 在侧边目录里把“当前所在章节”用样式标出来
-   // 找到最接近视窗顶部的 anchor
+  if (msg.type === "getActiveByScroll") { // Highlight = mark "current section" in sidebar directory with style
+   // Find anchor closest to top of viewport
     const vis = state.outlines.map(o => {
       const el = document.getElementById(o.anchorId);
       if (!el) return { id: o.anchorId, top: Infinity };
@@ -123,21 +123,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ anchorId: vis[0]?.id });
   }
 
-  // 重新生成标题列表
+  // Regenerate title list
   if (msg.type === "reInit") {
     console.log("Content: reInit triggered from sidebar");
     init();  
     sendResponse({ ok: true });
   }
 
- // 新增标题
+ // Add new title
   if (msg.type === "checkUpdate") {
     console.log("content: checkUpdate triggered from sidebar");
     rebuildIncremental();
     sendResponse({ ok: true });
   }
 
-  // 提供chunk文本给侧栏
+  // Provide chunk text to sidebar
   if (msg.type === "getChunkText") {
   const chunk = state.chunks.find(c => c.anchorId === msg.anchorId);
   sendResponse({ text: chunk?.text || "" });
@@ -145,44 +145,44 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 
-// 新增标题函数
+// Add new title function
 async function rebuildIncremental() {
   console.log("content: incremental rebuild start");
 
-  const newChunks = window.segmentPage();  // 重新获取页面分段
+  const newChunks = window.segmentPage();  // Re-get page segments
   const oldLen = state.chunks.length;
   const newLen = newChunks.length;
 
-  // 识别chunk数量来判断是否需要新增标题
+  // Identify chunk count to determine if new titles are needed
   if (newLen <= oldLen) {
     console.log("No new chunks detected, directory is up to date.");
     return;
   }
 
-  // 找到新增部分
+  // Find newly added parts
   const added = newChunks.slice(oldLen);
   console.log(`Detected ${added.length} new chunks`);
 
-  // 追加到 state.chunks
+  // Append to state.chunks
   state.chunks.push(...added);
 
-  // 为新增部分准备占位标题
+  // Prepare placeholder titles for newly added parts
   const start = oldLen;
   const end = newLen;
   for (let i = start; i < end; i++) {
     state.outlines[i] = { title: "Generating…", anchorId: newChunks[i].anchorId };
   }
 
-  // 调用 AI 仅生成新增部分标题
+  // Call AI to generate titles only for newly added parts
   await requestAI(start, end);
 
-  // 通知侧栏更新
+  // Notify sidebar update
   chrome.runtime.sendMessage({ type: "aiOutlineUpdated", start, end });
   console.log("content: incremental rebuild complete");
 }
 
 
-// 初次启动，检测到chunk数量不为0时才开始生成标题，最多等待30秒
+// Initial startup, start generating titles when chunk count is not 0, wait up to 30 seconds
 /*
 (async function waitForChunks() {
   console.log("content: waiting for chunks...");
@@ -200,13 +200,13 @@ async function rebuildIncremental() {
       console.warn("segmentPage not ready yet", e);
     }
 
-    // 每隔 2 秒重试一次
+    // Retry every 2 seconds
     await new Promise(r => setTimeout(r, 2000));
     tries ++;
   }
 })();*/
 
-// 等待 sidebar 打开后通知再启动
+// Wait for sidebar to open and notify before starting
 chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.type === "manualInit") {
     console.log("content: manualInit received → start init()");
@@ -215,9 +215,9 @@ chrome.runtime.onMessage.addListener(async (msg) => {
 });
 
 
-// 当页面 URL 变化（例如切换到新的 Chat）时，自动重新 init()
+// When page URL changes (e.g. switch to new Chat), automatically re-init()
 let lastUrl = location.href;
-let sidebarActive = false; // ✅ 标志侧栏是否开启
+let sidebarActive = false; // ✅ Flag whether sidebar is open
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "manualInit") {
@@ -231,7 +231,7 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
-// ✅ 只有当侧栏处于开启状态时才检测 URL 变化
+// ✅ Only detect URL changes when sidebar is in open state
 setInterval(() => {
   if (!sidebarActive) return;
   if (location.href !== lastUrl) {

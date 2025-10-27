@@ -1,12 +1,12 @@
-// 网页语义分段核心逻辑
-// 从当前页面提取出「可读的内容块」，然后切分成合适长度的文本段，供后续 AI（Gemini Nano）生成标题
-// 两种分割方法，generic或者chat
+// Core logic for web page semantic segmentation
+// Extract "readable content blocks" from current page, then split into appropriately sized text segments for subsequent AI (Gemini Nano) title generation
+// Two segmentation methods: generic or chat
 
-//TODO 更改字数分段，完善chat分段策略
+//TODO Change word count segmentation, improve chat segmentation strategy
 
 console.log('Segment script loaded');
 
-// 判断元素是否可见
+// Check if element is visible
 function isVisible(el) {
   const style = window.getComputedStyle(el); 
   const rect = el.getBoundingClientRect();
@@ -19,7 +19,7 @@ function isVisible(el) {
   );
 }
 
-// 给每个node加一个隐藏锚点（anchor），跳转目标的锚点
+// Add a hidden anchor (anchor) to each node, target anchor for jumping
 function ensureAnchor(node) {
   if (!node.id) {
     const id = "ai-anchor-" + Math.random().toString(36).slice(2, 10);
@@ -33,65 +33,65 @@ function ensureAnchor(node) {
   }
 }
 
-// 字数分段法
+// Word count segmentation method
 function segmentPage_generic() {
   const root = document.body;
-  // Step 1: 获取候选节点
-  const sel = [ // 典型的内容标签
+  // Step 1: Get candidate nodes
+  const sel = [ // Typical content tags
     "article", "section", "main", "blockquote",
     "p", "li", "pre", "div[role='article']",
     "div[role='main']", "div[role='region']",
     "div.markdown", "div.prose", "div.message",
     "div.chat-message", "div.post", "div.comment"
   ].join(",");
-  let nodes = [...root.querySelectorAll(sel)].filter(isVisible); // 过滤掉不可见的元素 with isVisible()
-  // 去掉导航/脚注/代码块大容器等明显无关区域（可渐进增强）
+  let nodes = [...root.querySelectorAll(sel)].filter(isVisible); // Filter out invisible elements with isVisible()
+  // Remove navigation/footnotes/code block containers and other obviously irrelevant areas (can be progressively enhanced)
   nodes = nodes.filter(n => {
     const t = (n.innerText || "").trim();
     if (!t) return false;
-    if (t.length < 30) return false;           // 太短的先丢
+    if (t.length < 30) return false;           // Too short, discard first
     if (t.match(/^\s*cookie|accept|subscribe|登录|注册/i)) return false;
     return true;
   });
-  // Step 2: 为每个节点添加锚点
+  // Step 2: Add anchor to each node
   nodes.forEach(ensureAnchor);
-  // Step 3: 合并节点为块（chunk）
+  // Step 3: Merge nodes into chunks
   const minLen=100;
   const maxLen=3000;
-  const chunks = []; // 最终输出结果
+  const chunks = []; // Final output result
   let buf = [];
   let bufLen = 0;
 
-  // 把当前暂存的数据（缓冲区里的段落）输出为一个完整的块（chunk）
+  // Output current buffered data (paragraphs in buffer) as a complete chunk
   const flush = () => {
     if (buf.length) {
       const text = buf.map(n => (n.innerText || "").trim()).join("\n\n");
       const ids  = buf.map(n => n.dataset.__ai_anchor_id).filter(Boolean);
       const anchorId = buf[0].dataset.__ai_anchor_id;
-      chunks.push({ text, anchorId }); // 记录下这些节点的锚点 ID（后面会用于点击跳转）
+      chunks.push({ text, anchorId }); // Record anchor IDs of these nodes (used for click jumping later)
       buf = []; bufLen = 0;
     }
   };
- // 循环把段落逐个加入缓存
+ // Loop to add paragraphs one by one to cache
   for (const n of nodes) {
     const text = (n.innerText || "").trim();
-    if (bufLen + text.length > maxLen) flush(); // 超长就输出
+    if (bufLen + text.length > maxLen) flush(); // Output if too long
     buf.push(n);
     bufLen += text.length;
-    if (bufLen >= minLen) flush();  // 到达下限也输出
+    if (bufLen >= minLen) flush();  // Output when reaching lower limit
   }
   flush();
   return chunks;
 }
 
-// chatbot回答分段法
+// Chatbot response segmentation method
 function segmentPage_chatgpt() {
-  // Step 1: 找到所有 <article data-turn="user|assistant"> 节点
-  // 过滤掉用户回答
+  // Step 1: Find all <article data-turn="user|assistant"> nodes
+  // Filter out user responses
   const nodes = [...document.querySelectorAll("article[data-turn='assistant']")].filter(isVisible);
-  // Step 2: 给每个加上一个锚点
+  // Step 2: Add an anchor to each
   nodes.forEach(ensureAnchor);
-  // Step 3: 输出结构（每条消息就是一个块）
+  // Step 3: Output structure (each message is a chunk)
   const chunks = nodes.map(node => ({
     text: node.innerText.trim(),
     anchorId: node.dataset.__ai_anchor_id,
@@ -101,9 +101,9 @@ function segmentPage_chatgpt() {
   return chunks;
 }
 
-// Gemini分段法
+// Gemini segmentation method
 function segmentPage_gemini() {
-  // 找到所有 Gemini 对话块
+  // Find all Gemini conversation blocks
   const containers = [...document.querySelectorAll("div.conversation-container")].filter(isVisible);
 
   const chunks = [];
@@ -123,11 +123,11 @@ function segmentPage_gemini() {
 }
 
 function segmentPage_qwen() {
-  // 1️⃣ 找到所有模型回复块
+  // 1️⃣ Find all model response blocks
   const responses = [...document.querySelectorAll(".response-message-body--normal")]
     .filter(isVisible);
 
-  // 2️⃣ 为每个回复添加锚点并提取文本
+  // 2️⃣ Add anchor to each response and extract text
   const chunks = responses.map(el => {
     const textContainer = el.querySelector(".markdown-content-container");
     const text = textContainer ? textContainer.innerText.trim() : el.innerText.trim();
@@ -143,11 +143,11 @@ function segmentPage_qwen() {
 }
 
 function segmentPage_claude() {
-  // 找到所有回复块（每个 data-is-streaming="false" 的 div 都是一条完整回复）
+  // Find all response blocks (each div with data-is-streaming="false" is a complete response)
   const responses = [...document.querySelectorAll('div[data-is-streaming="false"]')].filter(isVisible);
 
   const chunks = responses.map(el => {
-    // 提取文本内容（优先 markdown 容器）
+    // Extract text content (prioritize markdown container)
     const textContainer = el.querySelector(".standard-markdown") || el;
     const text = textContainer.innerText.trim();
 
@@ -163,8 +163,8 @@ function segmentPage_claude() {
 
 
 
-// 标题分段法（Wikipedia、Docs,博客类网页）
-// 每个 chunk 最多 3000 字，超出自动拆分，忽略小于50字的chunk
+// Heading segmentation method (Wikipedia, Docs, blog-like web pages)
+// Each chunk max 3000 characters, auto-split if exceeded, ignore chunks smaller than 50 characters
 function segmentPage_heading() {
   const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6")].filter(isVisible);
   if (!headings.length) {
@@ -173,7 +173,7 @@ function segmentPage_heading() {
   }
 
   const chunks = [];
-  const MAX_LEN = 3000; // 增加一个长度上限
+  const MAX_LEN = 3000; // Add a length upper limit
   const MIN_LEN = 50;
 
   for (let i = 0; i < headings.length; i++) {
@@ -195,11 +195,11 @@ function segmentPage_heading() {
     const fullText = [current.innerText, ...content].join("\n\n").trim();
 
     if (!fullText) continue;
-    // 长度过小则忽略跳过（维基格式除外）
+    // Skip if too small (except Wikipedia format)
     if (fullText.length < MIN_LEN && !/wikipedia\.org/.test(location.hostname)) continue;
     
 
-    // 如果超出上限则切块
+    // Split if exceeds upper limit
     if (fullText.length > MAX_LEN) {
       for (let j = 0; j < fullText.length; j += MAX_LEN) {
         chunks.push({

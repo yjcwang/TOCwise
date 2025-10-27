@@ -1,11 +1,11 @@
 // ai/llm.js
 
-let cachedLanguageModel = null; // 全局缓存 LanguageModel 实例
+let cachedLanguageModel = null; // Global cache for LanguageModel instance
 
 export async function generateTitles(textArray) {
   if (!Array.isArray(textArray)) return [];
 
-  // 回退方案
+  // Fallback solution
   const fallbackTitle = (t) => {
     const s = String(t || "");
     const firstSentence = (s.split(/(?<=[。！？.!?])/)[0] || s).trim();
@@ -13,7 +13,7 @@ export async function generateTitles(textArray) {
     return { title: title || "无标题" };
   };
 
-  // LanguageModel 已经初始化 → 直接复用
+  // LanguageModel already initialized → reuse directly
   if (cachedLanguageModel) {
     console.log("llm: reuse cached LanguageModel");
     chrome.runtime.sendMessage({ type: "aiStatus", status: "ready" });
@@ -22,11 +22,11 @@ export async function generateTitles(textArray) {
     return results;
   }
 
-  // 通知sidebar开始初始化ai
+  // Notify sidebar to start AI initialization
   chrome.runtime.sendMessage({ type: "aiStatus", status: "loading" });
   
   console.log("llm: Hi I start check");
-  // 检查LanguageModel可用性
+  // Check LanguageModel availability
   let canUseLanguageModel = false;
 
     try {
@@ -51,7 +51,7 @@ export async function generateTitles(textArray) {
     return textArray.map(fallbackTitle);
   }
 
-  // 初始化 LanguageModel（仅第一次执行）
+  // Initialize LanguageModel (only on first execution)
   console.log("llm: init ai");
   const params = await LanguageModel.params();
   try {
@@ -84,7 +84,7 @@ export async function generateTitles(textArray) {
   return results;
 }
 
-// 提取批量生成逻辑，方便复用
+// Extract batch generation logic for reuse
 async function summarizeBatch(session, textArray, fallbackTitle) {
   const results = [];
   for (const text of textArray) {
@@ -99,7 +99,7 @@ async function summarizeBatch(session, textArray, fallbackTitle) {
   return results;
 }
 
-// 可选：提供一个reset方法，供content.js刷新时使用
+// Optional: provide a reset method for content.js refresh
 export function resetLanguageModel() {
   cachedLanguageModel = null;
 }

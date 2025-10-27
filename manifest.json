@@ -22,7 +22,7 @@
     }
   ],
   "action": {
-    "default_title": "AI 语义目录"
+    "default_title": "TOCwise"
   },
   "side_panel": {
     "default_path": "sidebar/sidebar.html"

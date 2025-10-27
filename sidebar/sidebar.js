@@ -1,11 +1,11 @@
 const ul = document.getElementById("list");
 const refreshBtn = document.getElementById("refresh");
-const summaryCache = {}; // 缓存每个chunk的概览
-const summaryState = {}; // 记录概览展开状态
-const summaryGenerated = {}; // ✅ 记录哪些 summary 已生成
+const summaryCache = {}; // Cache overview for each chunk
+const summaryState = {}; // Record overview expansion state
+const summaryGenerated = {}; // ✅ Record which summaries have been generated
 
 
-// 初始化AI提示样式
+// Initialize AI prompt style
 const loadingDiv = document.createElement("div");
 loadingDiv.id = "loadingHint";
 loadingDiv.textContent = "";
@@ -16,25 +16,25 @@ loadingDiv.style.cssText = `
 `;
 document.body.prepend(loadingDiv);
 
-// 缓存与当前tab
+// Cache and current tab
 const outlineCache = {};   // { [tabId: number]: { outlines: Array } }
-let currentTabId = null;   // 当前侧栏正在展示的 tabId
+let currentTabId = null;   // Current tab ID that sidebar is displaying
 const editedTitles = {};  // { tabId: { anchorId: "new title" } }
 
 
-// 按 tab 加载目录（先缓存、再请求）
+// Load directory by tab (cache first, then request)
 async function loadOutlineForTab(tabId) {
   currentTabId = tabId;
   console.log("sidebar: switch to tab", tabId);
 
-  // 1) 命中缓存 → 直接渲染
+  // 1) Hit cache → render directly
   if (outlineCache[tabId]) {
     console.log("sidebar: using cached outline");
     render(outlineCache[tabId].outlines);
     return;
   }
 
-  // 2) 未命中 → 请求 content
+  // 2) Miss cache → request content
   try {
     const res = await chrome.tabs.sendMessage(tabId, { type: "getOutline" });
     outlineCache[tabId] = {
@@ -44,7 +44,7 @@ async function loadOutlineForTab(tabId) {
     render(res.outlines);
   } catch (err) {
     console.warn("sidebar: getOutline failed (no content script yet?)", err);
-    // ✅ 改进：显示可点击的“刷新网页”提示
+    // ✅ Improvement: show clickable "reload website" prompt
     ul.innerHTML = `
     <li class="item">
       <div class="header-row">
@@ -56,7 +56,7 @@ async function loadOutlineForTab(tabId) {
     </li>
   `;
 
-    // ✅ 按钮点击：刷新当前标签页
+    // ✅ Button click: reload current tab
     const btn = document.getElementById("reloadPageBtn");
     if (btn) {
       btn.onclick = async () => {
@@ -67,28 +67,28 @@ async function loadOutlineForTab(tabId) {
   }
 }
 
-//获取当前标签页
+//Get current tab
 async function getActiveTabId() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   return tab.id;
 }
 
-//获取ai生成的目录
+//Get AI generated directory
 async function fetchOutline() {
   const tabId = await getActiveTabId();
-  // 侧栏 → 当前页面的 content script
+  // Sidebar → current page content script
   return chrome.tabs.sendMessage(tabId, { type: "getOutline" });
 }
 
-//=== 搜索功能 ===
+//=== Search functionality ===
 const searchInput = document.getElementById("tocSearch");
 const clearBtn = document.getElementById("clearSearch");
 
 searchInput.oninput = (e) => {
   const raw = e.target.value;
-  const keyword = raw.trim().toLowerCase(); // ✅ 去掉首尾空格
+  const keyword = raw.trim().toLowerCase(); // ✅ Remove leading/trailing spaces
   if (keyword === "") {
-    // ✅ 空或空格：恢复所有 item 并清除高亮
+    // ✅ Empty or spaces: restore all items and clear highlights
     [...ul.children].forEach(li => {
       li.style.display = "flex";
       const tDiv = li.querySelector(".t");
@@ -102,8 +102,8 @@ searchInput.oninput = (e) => {
     const tDiv = li.querySelector(".t");
     if (text.includes(keyword)) {
       li.style.display = "flex";
-      // ✅ 高亮匹配文字
-      const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // 转义正则
+      // ✅ Highlight matching text
+      const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // Escape regex
       tDiv.innerHTML = text.replace(
         new RegExp(escaped, "gi"),
         match => `<mark>${match}</mark>`
@@ -112,7 +112,7 @@ searchInput.oninput = (e) => {
   });
 };
 
-// ✅ 点击清空按钮
+// ✅ Click clear button
 clearBtn.onclick = () => {
   searchInput.value = "";
   [...ul.children].forEach(li => {
@@ -123,25 +123,25 @@ clearBtn.onclick = () => {
 };
 
 
-// 渲染目录
+// Render directory
 function render(outlines) {
   console.log("sidebar: render");
   ul.innerHTML = "";
 
-  // 从缓存中取出当前 tab 的 pinnedSet
+  // Get pinnedSet from cache for current tab
   const pinnedSet = outlineCache[currentTabId]?.pinnedSet || new Set();
 
-  // 把每个标题渲染成一个 <li>
+  // Render each title as a <li>
   for (const o of outlines) {
     const li = document.createElement("li");
     const isPinned = pinnedSet.has(o.anchorId);
 
-    // 样式和数据
+    // Style and data
     li.className = `item${isPinned ? " pinned" : ""}`;
     li.dataset.anchor = o.anchorId;
 
-    // 内部结构：标题 + 星标
-    // 内部结构：一行 header-row（star + 标题 + expand） + 一行 summary
+    // Internal structure: title + star
+    // Internal structure: one header-row (star + title + expand) + one summary
     li.innerHTML = `
     <div class="header-row">
       <img class="star" 
@@ -161,26 +161,26 @@ function render(outlines) {
 
 
 
-    // 星标点击事件（不触发跳转）
+    // Star click event (does not trigger jump)
     li.querySelector(".star").onclick = (e) => {
-      e.stopPropagation(); // 防止触发跳转
+      e.stopPropagation(); // Prevent triggering jump
       const newState = !li.classList.contains("pinned");
       li.classList.toggle("pinned", newState);
       e.target.src = `../icons/${newState ? "bookmark_pinned.svg" : "bookmark.svg"}`;
 
 
-      // 更新缓存中的 pinnedSet
+      // Update pinnedSet in cache
       const set = outlineCache[currentTabId].pinnedSet;
       if (newState) set.add(o.anchorId);
       else set.delete(o.anchorId);
     };
 
-    // 点击目录标题 → 页面跳转
+    // Click directory title → page jump
     const idx = outlines.indexOf(o);
     const next = outlines[idx + 1];
-    // 点击整行（除了星标）都跳转
+    // Click entire row (except star) to jump
     li.onclick = async (e) => {
-      if (e.target.classList.contains("star")) return; // ✅ 点击星标不跳转
+      if (e.target.classList.contains("star")) return; // ✅ Clicking star does not jump
       const tabId = await getActiveTabId();
       await chrome.tabs.sendMessage(tabId, {
         type: "jumpTo",
@@ -192,18 +192,18 @@ function render(outlines) {
 
     ul.appendChild(li);
 
-    // === 编辑按钮逻辑 ===
+    // === Edit button logic ===
     const editBtn = li.querySelector(".edit");
     editBtn.onclick = (ev) => {
       ev.stopPropagation();
       const tDiv = li.querySelector(".t");
 
-      // 如果已在编辑模式
+      // If already in edit mode
       if (tDiv.isContentEditable) {
         tDiv.contentEditable = "false";
         tDiv.classList.remove("editing");
         editBtn.innerHTML = '<img src="../icons/edit.svg" alt="edit" width="16" height="16" />';
-        // ✅ 保存修改到缓存
+        // ✅ Save changes to cache
         const tabId = currentTabId;
         if (!editedTitles[tabId]) editedTitles[tabId] = {};
         editedTitles[tabId][o.anchorId] = tDiv.textContent.trim();
@@ -211,13 +211,13 @@ function render(outlines) {
         return;
       }
 
-      // 进入编辑模式
+      // Enter edit mode
       tDiv.contentEditable = "true";
       tDiv.classList.add("editing");
       tDiv.focus();
       editBtn.innerHTML = '<img src="../icons/save.svg" alt="save" width="16" height="16" />';
 
-      // 按 Enter 退出编辑
+      // Press Enter to exit edit
       tDiv.onkeydown = (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -227,7 +227,7 @@ function render(outlines) {
     };
 
 
-    //自动恢复展开状态
+    //Auto restore expansion state
     if (summaryState[o.anchorId]) {
       const btn = li.querySelector(".expand");
       const summaryDiv = li.querySelector(".summary");
@@ -236,32 +236,32 @@ function render(outlines) {
       btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
     }
 
-    // 展开/折叠逻辑 
+    // Expand/collapse logic 
     li.querySelector(".expand").onclick = async (ev) => {
-      ev.stopPropagation(); // 避免触发跳转
+      ev.stopPropagation(); // Avoid triggering jump
       const btn = li.querySelector(".expand");
       const summaryDiv = li.querySelector(".summary");
       const anchorId = o.anchorId;
 
-      // 折叠逻辑
+      // Collapse logic
       if (li.classList.contains("expanded")) {
-        li.classList.remove("expanded"); // ✅ 用类控制
+        li.classList.remove("expanded"); // ✅ Use class control
         const nextIcon = summaryCache[anchorId] ? "expand_a" : "expand";
         btn.innerHTML = `<img src="../icons/${nextIcon}.svg" alt="expand" width="16" height="16" />`;
         summaryState[anchorId] = false;
         return;
       }
 
-      // 展开逻辑
+      // Expand logic
       if (summaryCache[anchorId]) {
         summaryDiv.innerHTML = summaryCache[anchorId];
-        li.classList.add("expanded"); // ✅ 加类名触发动画
+        li.classList.add("expanded"); // ✅ Add class name to trigger animation
         btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
         summaryState[anchorId] = true;
         return;
       }
 
-      // 生成摘要中
+      // Generating summary
       summaryDiv.innerHTML = "<i>Generating summary...</i>";
       btn.disabled = true;
       btn.innerHTML = '<img src="../icons/loading.svg" class="loading-spin" width="16" height="16" />';
@@ -272,12 +272,12 @@ function render(outlines) {
       });
 
       const bullets = await summarizeChunk(text);
-      // 去掉每行前面的 * 或 • 等符号
+      // Remove * or • symbols from beginning of each line
       const cleaned = bullets.map(b => b.replace(/^[*\s•-]+/, "").trim());
       const html = `<ul>${cleaned.map(b => `<li>${b}</li>`).join("")}</ul>`;
       summaryCache[anchorId] = html;
       summaryDiv.innerHTML = html;
-      li.classList.add("expanded"); // ✅ 动画展开
+      li.classList.add("expanded"); // ✅ Animate expansion
       btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
       btn.disabled = false;
       summaryState[anchorId] = true;
@@ -287,7 +287,7 @@ function render(outlines) {
 
 }
 
-// 调用 llm.js 的 bullet 模式生成摘要
+// Call llm.js bullet mode to generate summary
 async function summarizeChunk(text) {
   try {
     const { generateBullets } = await import(chrome.runtime.getURL("ai/llm.js"));
@@ -298,7 +298,7 @@ async function summarizeChunk(text) {
   }
 }
 
-//自动高亮当前章节：寻找最接近视窗顶部锚点，高亮对应标题
+//Auto highlight current section: find anchor closest to top of viewport, highlight corresponding title
 async function tickActive() {
   const tabId = await getActiveTabId();
   const res = await chrome.tabs.sendMessage(tabId, { type: "getActiveByScroll" });
@@ -308,15 +308,15 @@ async function tickActive() {
     li.classList.toggle("active", li.dataset.anchor === anchorId);
   });
 }
-// 监听ai标题更新，刷新显示
-// 监听 API 统一是 runtime.onMessage
+//Listen to AI title updates, refresh display
+// Listen to API uniformly with runtime.onMessage
 chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.type === "aiOutlineUpdated") {
-    // 增量更新，重新取一次
+    // Incremental update, fetch again
     console.log("sidebar: aiOutline Updated");
-    const tabId = await getActiveTabId();         // 拿到当前侧栏对应的 tab
-    const res = await fetchOutline();             // 重新取最新
-    // ✅ 只更新 outlines，不覆盖 pinnedSet
+    const tabId = await getActiveTabId();         // Get current tab corresponding to sidebar
+    const res = await fetchOutline();             // Fetch latest again
+    // ✅ Only update outlines, do not overwrite pinnedSet
     if (!outlineCache[tabId]) outlineCache[tabId] = { outlines: [], pinnedSet: new Set() };
     outlineCache[tabId].outlines = res.outlines;
     render(res.outlines);
@@ -335,70 +335,70 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       loadingDiv.textContent = "Created by TOCwise";
     }
   } */
-  // 只有当ai不可用才在上方显示文字信息
+  // Only show text info above when AI is unavailable
   if (msg.type === "aiStatus" && msg.status === "failed") {
     loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles. Open and Enable ➡️ chrome://flags/#prompt-api-for-gemini-nano 🔁 Close and Reload Chrome";
   }
 });
 
-// ✅ 新增：监听切换到其它 tab 时，自动切换目录
+// ✅ New: listen to switching to other tabs, automatically switch directory
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   if (activeInfo.tabId !== currentTabId) {
     await loadOutlineForTab(activeInfo.tabId);
   }
 });
 
-// ✅ 新增：监听同 tab 内的导航/刷新
+// ✅ New: listen to navigation/refresh within same tab
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (tabId === currentTabId && changeInfo.status === "complete") {
-    // URL/DOM 变化 → 清掉旧缓存，重新拉取
+    // URL/DOM changes → clear old cache, re-fetch
     delete outlineCache[tabId];
     await loadOutlineForTab(tabId);
   }
 });
 
-// 打开侧边栏
+// Open sidebar
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("sidebar: init on open");
 
   const tabId = await getActiveTabId();
-  // ✅ 先告诉 content 开始生成
+  // ✅ First tell content to start generating
   try {
     await chrome.tabs.sendMessage(tabId, { type: "manualInit" });
   } catch (err) {
     console.warn("sidebar: manualInit failed, content not ready", err);
   }
 
-  // 然后加载 outline
+  // Then load outline
   await loadOutlineForTab(tabId);
   setInterval(tickActive, 600);
 });
 
 
-//刷新按钮，重新生成标题列表
+//Refresh button, regenerate title list
 refreshBtn.onclick = async () => {
   console.log("sidebar: click on refresh");
-  // ✅ 临时切换为旋转动画
+  // ✅ Temporarily switch to rotation animation
   const originalHTML = refreshBtn.innerHTML;
   refreshBtn.innerHTML = `
     <img src="../icons/loading_refresh.svg" class="loading-spin"/>
   `;
 
-  // ✅ 禁止重复点击
+  // ✅ Prevent duplicate clicks
   refreshBtn.classList.add("busy");
   refreshBtn.style.pointerEvents = "none";
 
   try {
-    // 重新获取tab id
+    // Re-get tab id
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    // 向该tab id发送信息
+    // Send message to that tab id
     await chrome.tabs.sendMessage(tab.id, { type: "reInit" });
-    // ✅ 等待 AI 生成完毕停止动画
+    // ✅ Wait for AI generation to complete and stop animation
     await new Promise((resolve) => {
       const listener = (msg) => {
         if (msg.type === "aiStatus" && msg.status === "finish") {
           chrome.runtime.onMessage.removeListener(listener);
-          resolve(); // ✅ 收到 finish 信号 → 停止旋转
+          resolve(); // ✅ Receive finish signal → stop rotation
         }
       };
       chrome.runtime.onMessage.addListener(listener);
@@ -406,19 +406,19 @@ refreshBtn.onclick = async () => {
   } catch (err) {
     console.warn("sidebar: refresh failed, no receiver in this page", err);
   }
-  // ✅ 恢复原状态
+  // ✅ Restore original state
   refreshBtn.innerHTML = originalHTML;
   refreshBtn.classList.remove("busy");
   refreshBtn.style.pointerEvents = "auto";
 };
 
 
-// 检查新增按钮
+// Check new additions button
 const checkBtn = document.getElementById("checkUpdate");
 checkBtn.onclick = async () => {
   console.log("sidebar: click on check update");
 
-  // ✅ 临时切换为旋转动画
+  // ✅ Temporarily switch to rotation animation
   const originalHTML = checkBtn.innerHTML;
   checkBtn.innerHTML = `
     <img src="../icons/loading_update.svg" class="loading-spin"/>
@@ -427,11 +427,11 @@ checkBtn.onclick = async () => {
   checkBtn.style.pointerEvents = "none";
 
   try {
-    // 当前激活标签页
+    // Current active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     await chrome.tabs.sendMessage(tab.id, { type: "checkUpdate" });
 
-    // ✅ 等待 AI 完成 或 超时（例如 6 秒）
+    // ✅ Wait for AI completion or timeout (e.g. 6 seconds)
     await Promise.race([
       new Promise((resolve) => {
         const listener = (msg) => {
@@ -448,30 +448,30 @@ checkBtn.onclick = async () => {
   } catch (err) {
     console.warn("sidebar: check update failed", err);
   }
-  // ✅ 恢复原状态
+  // ✅ Restore original state
   checkBtn.innerHTML = originalHTML;
   checkBtn.classList.remove("busy");
   checkBtn.style.pointerEvents = "auto";
 };
 
-// dark mode 暗色模式
+// dark mode dark theme
 const themeBtn = document.getElementById("toggleTheme");
 
-// 初始化时读取主题
+// Initialize theme on startup
 document.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("theme") || "light";
   document.body.classList.toggle("dark", savedTheme === "dark");
   themeBtn.querySelector("img").src = savedTheme === "dark" ? "../icons/sun.svg" : "../icons/moon.svg";
 });
 
-// 切换主题
+// Switch theme
 themeBtn.onclick = () => {
   const isDark = document.body.classList.toggle("dark");
   localStorage.setItem("theme", isDark ? "dark" : "light");
   themeBtn.querySelector("img").src = isDark ? "../icons/sun.svg" : "../icons/moon.svg";
 };
 
-// ✅ 当用户关闭侧栏时，通知 content 停止自动 init
+// ✅ When user closes sidebar, notify content to stop auto init
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "hidden") {
     const tabId = await getActiveTabId();
