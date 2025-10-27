@@ -9,7 +9,7 @@
     <div class="head">
       <div class="title">
         <h2>TOCwise</h2>
-        <p class="subtitle">with Gemini Nano</p>
+        <p class="subtitle">local and helpful</p>
       </div>
       <div class="buttons">
         <button id="refresh" title="Regenerate">
@@ -23,7 +23,12 @@
         </button>
       </div>
     </div>
-
+    <div id="searchBox">
+      <input id="tocSearch" type="text" placeholder="Search..." />
+      <button id="clearSearch" title="Clear search">
+        <img src="../icons/clear.svg" width="14" height="14" />
+      </button>
+    </div>
     <ul id="list"></ul>
 
     <script src="sidebar.js"></script>

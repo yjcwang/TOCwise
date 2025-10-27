@@ -80,6 +80,49 @@ async function fetchOutline() {
   return chrome.tabs.sendMessage(tabId, { type: "getOutline" });
 }
 
+//=== 搜索功能 ===
+const searchInput = document.getElementById("tocSearch");
+const clearBtn = document.getElementById("clearSearch");
+
+searchInput.oninput = (e) => {
+  const raw = e.target.value;
+  const keyword = raw.trim().toLowerCase(); // ✅ 去掉首尾空格
+  if (keyword === "") {
+    // ✅ 空或空格：恢复所有 item 并清除高亮
+    [...ul.children].forEach(li => {
+      li.style.display = "flex";
+      const tDiv = li.querySelector(".t");
+      tDiv.innerHTML = tDiv.textContent; // 去掉 mark
+    });
+    return;
+  }
+
+  [...ul.children].forEach(li => {
+    const text = li.querySelector(".t").textContent.toLowerCase();
+    const tDiv = li.querySelector(".t");
+    if (text.includes(keyword)) {
+      li.style.display = "flex";
+      // ✅ 高亮匹配文字
+      const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // 转义正则
+      tDiv.innerHTML = text.replace(
+        new RegExp(escaped, "gi"),
+        match => `<mark>${match}</mark>`
+      );
+    } 
+  });
+};
+
+// ✅ 点击清空按钮
+clearBtn.onclick = () => {
+  searchInput.value = "";
+  [...ul.children].forEach(li => {
+    li.style.display = "flex";
+    const tDiv = li.querySelector(".t");
+    tDiv.innerHTML = tDiv.textContent;
+  });
+};
+
+
 // 渲染目录
 function render(outlines) {
   console.log("sidebar: render");

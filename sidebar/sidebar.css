@@ -380,6 +380,62 @@ body.dark #toggleTheme:hover img {
 }
 
 
+mark {
+  background: #f6e58d;
+  color: #000;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* 搜索栏容器 */
+#searchBox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+#tocSearch {
+  width: 100%;
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+#clearSearch {
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+#clearSearch:hover {
+  opacity: 1;
+}
+
+/* 暗色模式 */
+body.dark #searchBox {
+  background-color: transparent; /* 保持背景透明，融合整体色 */
+}
+
+body.dark #tocSearch {
+  background-color: #2b2b2b;   /* 深灰背景 */
+  color: #f0f0f0;              /* 浅色文字 */
+  border: 1px solid #555;      /* 暗色边框 */
+  caret-color: #fff;           /* 光标颜色 */
+}
+
+body.dark #tocSearch::placeholder {
+  color: #aaa;                 /* 提示文字略浅 */
+}
+
+
+
+
+
 
 
 
