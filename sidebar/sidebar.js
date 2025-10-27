@@ -61,7 +61,7 @@ async function loadOutlineForTab(tabId) {
     if (btn) {
       btn.onclick = async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        chrome.tabs.reload(tab.id); // 自动刷新网页
+        chrome.tabs.reload(tab.id); // Automatically refresh the webpage
       };
     }
   }
@@ -86,13 +86,13 @@ const clearBtn = document.getElementById("clearSearch");
 
 searchInput.oninput = (e) => {
   const raw = e.target.value;
-  const keyword = raw.trim().toLowerCase(); // ✅ Remove leading/trailing spaces
+  const keyword = raw.trim().toLowerCase(); // Remove leading/trailing spaces
   if (keyword === "") {
-    // ✅ Empty or spaces: restore all items and clear highlights
+    // Empty or spaces: restore all items and clear highlights
     [...ul.children].forEach(li => {
       li.style.display = "flex";
       const tDiv = li.querySelector(".t");
-      tDiv.innerHTML = tDiv.textContent; // 去掉 mark
+      tDiv.innerHTML = tDiv.textContent; // Remove mark
     });
     return;
   }
@@ -102,7 +102,7 @@ searchInput.oninput = (e) => {
     const tDiv = li.querySelector(".t");
     if (text.includes(keyword)) {
       li.style.display = "flex";
-      // ✅ Highlight matching text
+      // Highlight matching text
       const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // Escape regex
       tDiv.innerHTML = text.replace(
         new RegExp(escaped, "gi"),
@@ -112,7 +112,7 @@ searchInput.oninput = (e) => {
   });
 };
 
-// ✅ Click clear button
+// Click clear button
 clearBtn.onclick = () => {
   searchInput.value = "";
   [...ul.children].forEach(li => {
@@ -180,7 +180,7 @@ function render(outlines) {
     const next = outlines[idx + 1];
     // Click entire row (except star) to jump
     li.onclick = async (e) => {
-      if (e.target.classList.contains("star")) return; // ✅ Clicking star does not jump
+      if (e.target.classList.contains("star")) return; // Clicking star does not jump
       const tabId = await getActiveTabId();
       await chrome.tabs.sendMessage(tabId, {
         type: "jumpTo",
@@ -203,7 +203,7 @@ function render(outlines) {
         tDiv.contentEditable = "false";
         tDiv.classList.remove("editing");
         editBtn.innerHTML = '<img src="../icons/edit.svg" alt="edit" width="16" height="16" />';
-        // ✅ Save changes to cache
+        // Save changes to cache
         const tabId = currentTabId;
         if (!editedTitles[tabId]) editedTitles[tabId] = {};
         editedTitles[tabId][o.anchorId] = tDiv.textContent.trim();
@@ -245,7 +245,7 @@ function render(outlines) {
 
       // Collapse logic
       if (li.classList.contains("expanded")) {
-        li.classList.remove("expanded"); // ✅ Use class control
+        li.classList.remove("expanded"); // Use class control
         const nextIcon = summaryCache[anchorId] ? "expand_a" : "expand";
         btn.innerHTML = `<img src="../icons/${nextIcon}.svg" alt="expand" width="16" height="16" />`;
         summaryState[anchorId] = false;
@@ -255,7 +255,7 @@ function render(outlines) {
       // Expand logic
       if (summaryCache[anchorId]) {
         summaryDiv.innerHTML = summaryCache[anchorId];
-        li.classList.add("expanded"); // ✅ Add class name to trigger animation
+        li.classList.add("expanded"); // Add class name to trigger animation
         btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
         summaryState[anchorId] = true;
         return;
@@ -277,7 +277,7 @@ function render(outlines) {
       const html = `<ul>${cleaned.map(b => `<li>${b}</li>`).join("")}</ul>`;
       summaryCache[anchorId] = html;
       summaryDiv.innerHTML = html;
-      li.classList.add("expanded"); // ✅ Animate expansion
+      li.classList.add("expanded"); // Animate expansion
       btn.innerHTML = '<img src="../icons/collapse.svg" alt="collapse" width="16" height="16" />';
       btn.disabled = false;
       summaryState[anchorId] = true;
@@ -298,7 +298,7 @@ async function summarizeChunk(text) {
   }
 }
 
-//Auto highlight current section: find anchor closest to top of viewport, highlight corresponding title
+// Auto highlight current section: find anchor closest to top of viewport, highlight corresponding title
 async function tickActive() {
   const tabId = await getActiveTabId();
   const res = await chrome.tabs.sendMessage(tabId, { type: "getActiveByScroll" });
@@ -308,7 +308,7 @@ async function tickActive() {
     li.classList.toggle("active", li.dataset.anchor === anchorId);
   });
 }
-//Listen to AI title updates, refresh display
+// Listen to AI title updates, refresh display
 // Listen to API uniformly with runtime.onMessage
 chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.type === "aiOutlineUpdated") {
@@ -341,14 +341,14 @@ chrome.runtime.onMessage.addListener(async (msg) => {
   }
 });
 
-// ✅ New: listen to switching to other tabs, automatically switch directory
+// New: listen to switching to other tabs, automatically switch directory
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   if (activeInfo.tabId !== currentTabId) {
     await loadOutlineForTab(activeInfo.tabId);
   }
 });
 
-// ✅ New: listen to navigation/refresh within same tab
+// New: listen to navigation/refresh within same tab
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (tabId === currentTabId && changeInfo.status === "complete") {
     // URL/DOM changes → clear old cache, re-fetch
@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("sidebar: init on open");
 
   const tabId = await getActiveTabId();
-  // ✅ First tell content to start generating
+  // First tell content to start generating
   try {
     await chrome.tabs.sendMessage(tabId, { type: "manualInit" });
   } catch (err) {
@@ -378,13 +378,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 //Refresh button, regenerate title list
 refreshBtn.onclick = async () => {
   console.log("sidebar: click on refresh");
-  // ✅ Temporarily switch to rotation animation
+  // Temporarily switch to rotation animation
   const originalHTML = refreshBtn.innerHTML;
   refreshBtn.innerHTML = `
     <img src="../icons/loading_refresh.svg" class="loading-spin"/>
   `;
 
-  // ✅ Prevent duplicate clicks
+  // Prevent duplicate clicks
   refreshBtn.classList.add("busy");
   refreshBtn.style.pointerEvents = "none";
 
@@ -393,12 +393,12 @@ refreshBtn.onclick = async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     // Send message to that tab id
     await chrome.tabs.sendMessage(tab.id, { type: "reInit" });
-    // ✅ Wait for AI generation to complete and stop animation
+    // Wait for AI generation to complete and stop animation
     await new Promise((resolve) => {
       const listener = (msg) => {
         if (msg.type === "aiStatus" && msg.status === "finish") {
           chrome.runtime.onMessage.removeListener(listener);
-          resolve(); // ✅ Receive finish signal → stop rotation
+          resolve(); // Receive finish signal → stop rotation
         }
       };
       chrome.runtime.onMessage.addListener(listener);
@@ -406,7 +406,7 @@ refreshBtn.onclick = async () => {
   } catch (err) {
     console.warn("sidebar: refresh failed, no receiver in this page", err);
   }
-  // ✅ Restore original state
+  // Restore original state
   refreshBtn.innerHTML = originalHTML;
   refreshBtn.classList.remove("busy");
   refreshBtn.style.pointerEvents = "auto";
@@ -418,7 +418,7 @@ const checkBtn = document.getElementById("checkUpdate");
 checkBtn.onclick = async () => {
   console.log("sidebar: click on check update");
 
-  // ✅ Temporarily switch to rotation animation
+  // Temporarily switch to rotation animation
   const originalHTML = checkBtn.innerHTML;
   checkBtn.innerHTML = `
     <img src="../icons/loading_update.svg" class="loading-spin"/>
@@ -431,7 +431,7 @@ checkBtn.onclick = async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     await chrome.tabs.sendMessage(tab.id, { type: "checkUpdate" });
 
-    // ✅ Wait for AI completion or timeout (e.g. 6 seconds)
+    // Wait for AI completion or timeout (e.g. 6 seconds)
     await Promise.race([
       new Promise((resolve) => {
         const listener = (msg) => {
@@ -448,7 +448,7 @@ checkBtn.onclick = async () => {
   } catch (err) {
     console.warn("sidebar: check update failed", err);
   }
-  // ✅ Restore original state
+  // Restore original state
   checkBtn.innerHTML = originalHTML;
   checkBtn.classList.remove("busy");
   checkBtn.style.pointerEvents = "auto";
@@ -471,7 +471,7 @@ themeBtn.onclick = () => {
   themeBtn.querySelector("img").src = isDark ? "../icons/sun.svg" : "../icons/moon.svg";
 };
 
-// ✅ When user closes sidebar, notify content to stop auto init
+// When user closes sidebar, notify content to stop auto init
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "hidden") {
     const tabId = await getActiveTabId();

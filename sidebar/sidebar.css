@@ -36,7 +36,7 @@ body {
   font-size: 12px;
 }
 
-/* === Buttons (通用按钮) === */
+/* === Buttons (general) === */
 .buttons button,
 .reload-btn {
   display: inline-flex;
@@ -60,7 +60,7 @@ body {
   box-shadow: 0 2px 5px rgba(103,80,164,0.25);
 }
 
-/* 主按钮：深紫色 */
+
 #refresh {
   background: #6750A4;
   color: #fff;
@@ -73,7 +73,7 @@ body {
   content: url("../icons/refresh_hover.svg");
 }
 
-/* 次按钮：浅紫灰 */
+
 #checkUpdate {
   background: #cdb0fc;
   color: #4F378B;
@@ -86,7 +86,7 @@ body {
   content: url("../icons/update_hover.svg");
 }
 
-/* 暗色模式按钮 */
+
 #toggleTheme {
   background: #07011d;
 }
@@ -103,6 +103,35 @@ body {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+
+/* Search bar container */
+#searchBox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+#tocSearch {
+  width: 100%;
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+#clearSearch {
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+#clearSearch:hover {
+  opacity: 1;
 }
 
 /* === TOC Item === */
@@ -140,7 +169,7 @@ body {
   align-self: flex-start;
 }
 
-/* 星标与展开 */
+/* Star and expand */
 .item .star,
 .item .header-row .star {
   width: 16px;
@@ -176,47 +205,47 @@ body {
   cursor: pointer;
 }
 
-/* 未展开（还未生成摘要）的 expand hover */
+/* Expand hover when not expanded (no summary generated) */
 .item .expand img[src*="expand.svg"]:hover,
 .item .expand:hover img[src*="expand.svg"] {
   content: url("../icons/expand_hover.svg");
 }
 
-/* 已生成摘要但未展开 (expand_a.svg) hover */
+/* Expand hover when expanded (expand_a.svg) */
 .item .expand img[src*="expand_a.svg"]:hover,
 .item .expand:hover img[src*="expand_a.svg"] {
   content: url("../icons/expand_a_hover.svg");
 }
 
-/* 展开状态 (collapse.svg) hover */
+/* Expand hover when collapsed (collapse.svg) */
 .item .expand img[src*="collapse.svg"]:hover,
 .item .expand:hover img[src*="collapse.svg"] {
   content: url("../icons/collapse_hover.svg");
 }
 
-/* 摘要 */
+/* Summary */
 .item .summary {
-  max-height: 0;                 /* ✅ 默认收起 */
-  overflow: hidden;              /* ✅ 隐藏溢出 */
-  opacity: 0;                    /* ✅ 透明度初始值 */
+  max-height: 0;              
+  overflow: hidden;          
+  opacity: 0;                   
   margin-top: 8px;
   padding: 0 28px 0 4px;
   font-size: 13px;
   color: #555;
   line-height: 1.5;
   width: 100%;
-  transition: max-height 0.5s ease-out, opacity 0.4s ease-out; /* ✅ 动画 */
+  transition: max-height 0.5s ease-out, opacity 0.4s ease-out; 
 }
 
 .item.expanded .summary {
-  max-height: 600px;             /* ✅ 允许足够空间 */
+  max-height: 600px;          
   opacity: 1;
   transition:
     max-height 0.4s ease-in,   
     opacity 0.3s ease-in;
 }
 
-/* 选中高亮 */
+/* Highlighted when selected */
 .item.active {
   border-left-color: #6750A4;
   background: #E8DEF8;
@@ -226,7 +255,7 @@ body {
   font-weight: 600;
 }
 
-/* === 编辑模式样式 === */
+/* === Editing mode style === */
 .item .t.editing {
   border: 1px dashed #6750a4;
   padding: 2px 4px;
@@ -247,13 +276,13 @@ body {
   content: url("../icons/edit_hover.svg");
 }
 
-/* 处于编辑状态（显示 save 图标时）的 hover */
+/* Edit hover when in editing mode (display save icon) */
 .item .edit img[src*="save.svg"]:hover,
 .item .edit:hover img[src*="save.svg"] {
   content: url("../icons/save_hover.svg");
 }
 
-/* === Header Row 布局 === */
+/* === Header Row layout === */
 .item .header-row {
   display: flex;
   align-items: center;
@@ -270,7 +299,7 @@ body {
   flex-shrink: 0;
 }
 
-/* === 暗色模式 === */
+/* === Dark mode === */
 .theme-row {
   text-align: right;
 }
@@ -289,7 +318,7 @@ body {
   top: 1px;
 }
 
-/* 暗色主题整体 */
+/* Dark theme overall */
 body.dark {
   background: #1e1e1e;
   color: #e6e6e6;
@@ -327,7 +356,7 @@ body.dark .item .t.editing {
   border: 1px dashed #6750a4;
   background: #392d3e;
 }
-/* 暗色模式按钮组 */
+/* Dark mode button group */
 body.dark #refresh,
 body.dark #checkUpdate,
 body.dark #toggleTheme {
@@ -368,7 +397,23 @@ body.dark #toggleTheme:hover img {
   content: url("../icons/sun_hover.svg");
 }
 
-/* === 自定义旋转动画 === */
+body.dark #searchBox {
+  background-color: transparent;
+}
+
+body.dark #tocSearch {
+  background-color: #2b2b2b;  
+  color: #f0f0f0;             
+  border: 1px solid #555;  
+  caret-color: #fff;           
+}
+
+body.dark #tocSearch::placeholder {
+  color: #aaa;               
+}
+
+
+/* === Custom rotation animation === */
 .loading-spin {
   animation: spin 1s linear infinite;
   transform-origin: center;
@@ -387,50 +432,7 @@ mark {
   padding: 0 2px;
 }
 
-/* 搜索栏容器 */
-#searchBox {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
 
-#tocSearch {
-  width: 100%;
-  flex: 1;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-  font-size: 13px;
-}
-
-#clearSearch {
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-}
-#clearSearch:hover {
-  opacity: 1;
-}
-
-/* 暗色模式 */
-body.dark #searchBox {
-  background-color: transparent; /* 保持背景透明，融合整体色 */
-}
-
-body.dark #tocSearch {
-  background-color: #2b2b2b;   /* 深灰背景 */
-  color: #f0f0f0;              /* 浅色文字 */
-  border: 1px solid #555;      /* 暗色边框 */
-  caret-color: #fff;           /* 光标颜色 */
-}
-
-body.dark #tocSearch::placeholder {
-  color: #aaa;                 /* 提示文字略浅 */
-}
 
 
 
