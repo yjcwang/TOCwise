@@ -8,8 +8,6 @@
 **TOCwise** is a Chrome extension built on **Gemini Nano AI**, primarily designed for **chatbot and AI conversation pages**, while also supporting long-form articles and documentation sites — making every page effortless to explore.  
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
 
----
-
 ## 🚀 Key Features
 
 - **🤖 AI-Generated Semantic TOC** – Uses the built-in Gemini Nano AI to craft concise, meaningful titles for every section.
@@ -25,7 +23,6 @@ It automatically understands the structure of any page, creates a **semantic, cl
 - **🌙 Dark Mode** – Matches your system theme for comfortable reading.  
 - **🎨 Google Material Design** – Clean, minimal, and human-centered interaction at every step.
 
----
 
 ## 🧠 How It Works  
 
@@ -46,8 +43,6 @@ background.js → content.js → llm.js / llm_prompt.js → sidebar.js
 **Flow:**
 When the sidebar opens → `content.js` segments the page → `llm.js` names each chunk → `sidebar.js` displays the outline and syncs scrolling — all processed **locally on-device** via Gemini Nano.
 
----
-
 ### Adaptive Segmentation  
 TOCwise automatically selects the most effective segmentation strategy for each site:
 
@@ -64,7 +59,6 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 - **AI Summarization** – Uses Chrome’s Summarizer API (Gemini Nano) to generate titles and short abstracts.  
 - **Real-Time Sync** – Highlights the current section as you scroll.
 
----
 
 ## ⚙️ Installation and Usage
 
@@ -103,8 +97,6 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 - Icons by Google Fonts Material Icons
 - Design inspired by Google Material Design Guidelines
 
----
-
 ## 🔍 Example
 
 ### Try it out!
@@ -142,7 +134,6 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 > While it also works on most **HTML-structured webpages**, some custom sites or component-based apps  
 > may have unconventional DOM layouts where segmentation may be less precise.
 
-*TOCwise automatically builds an AI-generated outline in the sidebar, allowing instant navigation, editing, and summarization.*
 
 
 
