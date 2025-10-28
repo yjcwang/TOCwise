@@ -5,14 +5,15 @@
 <h1 align="center">TOCwise – AI-Powered Table of Contents</h1>
 
 
-**TOCwise** is an intelligent Chrome extension built on **Gemini Nano AI**, designed to make long webpages effortless to explore.  
+**TOCwise** is a Chrome extension built on **Gemini Nano AI**, primarily designed for **chatbot and AI conversation pages**, while also supporting long-form articles and documentation sites — making every page effortless to explore.  
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **🤖 AI-Generated Semantic TOC** – Uses the built-in Gemini Nano AI to craft concise, meaningful titles for every section.  
+- **🤖 AI-Generated Semantic TOC** – Uses the built-in Gemini Nano AI to craft concise, meaningful titles for every section.
+- **🎯 Adaptive Segmentation** – Works seamlessly on ChatGPT, Gemini, Claude, Qwen, and other long-form pages.  
 - **📱 Integrated Sidebar** – Seamlessly anchored with Chrome’s Side Panel API for instant access.  
 - **💾 Smart Multi-Tab Cache** – Keeps your outlines persistent while you switch between tabs.  
 - **⚡ 100 % On-Device** – All AI processing runs locally for privacy and performance.  
@@ -21,7 +22,6 @@ It automatically understands the structure of any page, creates a **semantic, cl
 - **✏️ Editable Titles** – Instantly refine any heading by hand; you’re always in control.  
 - **📍 Pin Key Sections** – Keep your most important titles within reach.  
 - **🔍 Keyword Search** – Find the topic you need in a long outline in seconds.  
-- **🎯 Adaptive Segmentation** – Tailors segmentation logic to site types such as ChatGPT, Claude, and blogs.  
 - **🌙 Dark Mode** – Matches your system theme for comfortable reading.  
 - **🎨 Google Material Design** – Clean, minimal, and human-centered interaction at every step.
 
@@ -39,7 +39,7 @@ background.js → content.js → llm.js / llm_prompt.js → sidebar.js
 
 * **background.js** – The service worker that controls extension behavior and opens the sidebar when the icon is clicked.
 * **content.js** – Injected into webpages; segments visible text blocks, calls AI to generate titles, and links each section to an anchor.
-* **segment.js** – Detects page type (ChatGPT, Gemini, blogs, etc.) and applies adaptive segmentation logic to extract content chunks.
+* **segment.js** – Detects page type and applies adaptive segmentation logic to extract content chunks.
 * **llm.js / llm_prompt.js** – Connect to Chrome’s local **Gemini Nano** APIs for title and summary generation, with graceful fallback.
 * **sidebar.js** – Renders the AI-generated outline, handles search, editing, pinning, dark mode, and smooth jump-to-section navigation.
 
@@ -71,8 +71,8 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 ### Developer Mode Setup  
 
 1. **Download the project**
-   Download ZIP and extract
-   or
+   - Download ZIP and extract
+   - Or with git clone:
    ```bash
    git clone https://github.com/yjcwang/TOCwise.git
    cd TOCwise
@@ -92,18 +92,6 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 5. **Open the Sidebar**
    - Click the TOCwise icon in the toolbar
 
-
-### Supported Sites
-- ✅ ChatGPT (chat.openai.com)
-- ✅ Claude (claude.ai)  
-- ✅ Gemini (gemini.google.com)
-- ✅ Qwen (qwen.ai)
-- ✅ Docs (MDN, Stack Overflow)
-- ✅ Blogs (Medium, personal sites)
-- ✅ Wikipedia
-- ✅ And...any page even without standard headings
-
-
 ## 📜 License & Credits
 
 **MIT License** - Open source and free to use
@@ -119,6 +107,18 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 
 ## 🔍 Example
 
+### Try it out!
+#### Chatbots
+- [ChatGPT](https://chat.openai.com)
+- [Claude](https://claude.ai)
+- [Gemini](https://gemini.google.com)
+- [Qwen](https://qwen.ai)
+#### Other Webpages
+- [Linux man page](https://linux.die.net/man/1/intro)
+- [React Docs](https://react.dev/learn)
+- [Bair Blog](https://bair.berkeley.edu/blog/2025/04/08/plaid/)
+
+### Screenshots
 <p align="center">
   <img src="./readme_figures/example_1.png" alt="TOCwise Sidebar on Google Gemini" width="880"/>
   <br/>
@@ -137,6 +137,10 @@ TOCwise automatically selects the most effective segmentation strategy for each 
   <em>Dark mode</em>
 </p>
 
+> ⚙️ **Note:**  
+> TOCwise is primarily optimized for **AI chatbot interfaces** (ChatGPT, Gemini, Claude, Qwen).  
+> While it also works on most **HTML-structured webpages**, some custom sites or component-based apps  
+> may have unconventional DOM layouts where segmentation may be less precise.
 
 *TOCwise automatically builds an AI-generated outline in the sidebar, allowing instant navigation, editing, and summarization.*
 
