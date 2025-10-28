@@ -93,7 +93,7 @@ function segmentPage_chatgpt() {
   nodes.forEach(ensureAnchor);
   // Step 3: Output structure (each message is a chunk)
   const chunks = nodes.map(node => ({
-    text: node.innerText.trim(),
+    text: node.textContent.trim(),
     anchorId: node.dataset.__ai_anchor_id,
     role: node.dataset.turn || "unknown"
   })).filter(c => c.text.length > 0);
