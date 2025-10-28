@@ -103,11 +103,10 @@ searchInput.oninput = (e) => {
     if (text.includes(keyword)) {
       li.style.display = "flex";
       // Highlight matching text
-      const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // Escape regex
-      tDiv.innerHTML = text.replace(
-        new RegExp(escaped, "gi"),
-        match => `<mark>${match}</mark>`
-      );
+      const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const pattern = new RegExp(`\\b${escaped}\\b`, "gi");  
+      tDiv.innerHTML = text.replace(pattern, match => `<mark>${match}</mark>`);
+
     } 
   });
 };
@@ -310,7 +309,7 @@ async function tickActive() {
     });
   } catch (err) {
     if (err.message?.includes("Receiving end does not exist")) {
-      // ✅ No content script in this page (e.g. chrome://, blank tab)
+      // No content script in this page (e.g. chrome://, blank tab)
       return;
     }
     console.warn("sidebar: tickActive failed", err);
@@ -324,7 +323,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
     console.log("sidebar: aiOutline Updated");
     try {
       const tabId = await getActiveTabId();
-      const res = await fetchOutline().catch(() => null); // ✅ Safe fetch
+      const res = await fetchOutline().catch(() => null); // Safe fetch
       if (!res) return;
       if (!outlineCache[tabId]) outlineCache[tabId] = { outlines: [], pinnedSet: new Set() };
       outlineCache[tabId].outlines = res.outlines;
@@ -338,7 +337,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
     }
   }
 
-  // ✅ Safe AI status update (no connection issues)
+  // Safe AI status update (no connection issues)
   if (msg.type === "aiStatus" && msg.status === "failed") {
     try {
       loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles. Open and Enable ➡️ chrome://flags/#prompt-api-for-gemini-nano 🔁 Close and Reload Chrome";
