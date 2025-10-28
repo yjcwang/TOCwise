@@ -104,7 +104,7 @@ async function summarizeBatch(summarizer, textArray, fallbackTitle) {
       // If more than 5 words, retry once
       const wordCount = title.split(/\s+/).filter(Boolean).length;
       if (wordCount > 6) {
-        console.warn(`Title too long (${wordCount} words): "${title}" — retrying...`);
+        console.log(`Title too long (${wordCount} words): "${title}" — retrying...`);
         raw = await summarizer.summarize(title, {
           context:
             "Shorten the title to 5 words or fewer. Use Title Case (Capitalize Each Main Word). Keep style consistent across all titles. Avoid sentences — use short noun phrases only. Do not use ALL CAPS or punctuation. Do not include brand or product names. Output only the title text."

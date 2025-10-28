@@ -43,7 +43,7 @@ async function loadOutlineForTab(tabId) {
     };           // 写入缓存
     render(res.outlines);
   } catch (err) {
-    console.warn("sidebar: getOutline failed (no content script yet?)", err);
+    console.log("sidebar: getOutline failed (no content script yet?)", err);
     // ✅ Improvement: show clickable "reload website" prompt
     ul.innerHTML = `
     <li class="item">
@@ -298,48 +298,56 @@ async function summarizeChunk(text) {
   }
 }
 
-// Auto highlight current section: find anchor closest to top of viewport, highlight corresponding title
+// Auto highlight current section: find anchor closest to top of viewport
 async function tickActive() {
-  const tabId = await getActiveTabId();
-  const res = await chrome.tabs.sendMessage(tabId, { type: "getActiveByScroll" });
-  if (!res) return;
-  const { anchorId } = res;
-  [...ul.children].forEach(li => {
-    li.classList.toggle("active", li.dataset.anchor === anchorId);
-  });
+  try {
+    const tabId = await getActiveTabId();
+    const res = await chrome.tabs.sendMessage(tabId, { type: "getActiveByScroll" });
+    if (!res) return;
+    const { anchorId } = res;
+    [...ul.children].forEach(li => {
+      li.classList.toggle("active", li.dataset.anchor === anchorId);
+    });
+  } catch (err) {
+    if (err.message?.includes("Receiving end does not exist")) {
+      // ✅ No content script in this page (e.g. chrome://, blank tab)
+      return;
+    }
+    console.warn("sidebar: tickActive failed", err);
+  }
 }
+
 // Listen to AI title updates, refresh display
 // Listen to API uniformly with runtime.onMessage
 chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.type === "aiOutlineUpdated") {
-    // Incremental update, fetch again
     console.log("sidebar: aiOutline Updated");
-    const tabId = await getActiveTabId();         // Get current tab corresponding to sidebar
-    const res = await fetchOutline();             // Fetch latest again
-    // ✅ Only update outlines, do not overwrite pinnedSet
-    if (!outlineCache[tabId]) outlineCache[tabId] = { outlines: [], pinnedSet: new Set() };
-    outlineCache[tabId].outlines = res.outlines;
-    render(res.outlines);
-
-  }
-  /*
-  if (msg.type === "aiStatus") {
-    if (msg.status === "loading" || msg.status === "downloading") {
-      loadingDiv.textContent = "🚀 Initializing Gemini Nano AI...";
-      loadingDiv.style.display = "block";
-    } else if (msg.status === "failed") {
-      loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles. Open and Enable ➡️ chrome://flags/#prompt-api-for-gemini-nano 🔁 Close and Reload Chrome";
-    } else if (msg.status === "ready") {
-      loadingDiv.textContent = "Generating Summary...";
-    } else if (msg.status === "finish") {
-      loadingDiv.textContent = "Created by TOCwise";
+    try {
+      const tabId = await getActiveTabId();
+      const res = await fetchOutline().catch(() => null); // ✅ Safe fetch
+      if (!res) return;
+      if (!outlineCache[tabId]) outlineCache[tabId] = { outlines: [], pinnedSet: new Set() };
+      outlineCache[tabId].outlines = res.outlines;
+      render(res.outlines);
+    } catch (err) {
+      if (err.message?.includes("Receiving end does not exist")) {
+        console.log("sidebar: skip update, no content script present");
+      } else {
+        console.warn("sidebar: aiOutlineUpdated handling failed", err);
+      }
     }
-  } */
-  // Only show text info above when AI is unavailable
+  }
+
+  // ✅ Safe AI status update (no connection issues)
   if (msg.type === "aiStatus" && msg.status === "failed") {
-    loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles. Open and Enable ➡️ chrome://flags/#prompt-api-for-gemini-nano 🔁 Close and Reload Chrome";
+    try {
+      loadingDiv.textContent = "⚠️ AI unavailable, using fallback titles. Open and Enable ➡️ chrome://flags/#prompt-api-for-gemini-nano 🔁 Close and Reload Chrome";
+    } catch (err) {
+      console.warn("sidebar: failed to update AI status hint", err);
+    }
   }
 });
+
 
 // New: listen to switching to other tabs, automatically switch directory
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
@@ -366,7 +374,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     await chrome.tabs.sendMessage(tabId, { type: "manualInit" });
   } catch (err) {
-    console.warn("sidebar: manualInit failed, content not ready", err);
+    console.log("sidebar: manualInit failed, content not ready", err);
   }
 
   // Then load outline
@@ -404,7 +412,7 @@ refreshBtn.onclick = async () => {
       chrome.runtime.onMessage.addListener(listener);
     });
   } catch (err) {
-    console.warn("sidebar: refresh failed, no receiver in this page", err);
+    console.log("sidebar: refresh failed, no receiver in this page", err);
   }
   // Restore original state
   refreshBtn.innerHTML = originalHTML;
