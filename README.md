@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./readme_figures/tocwise.png" alt="TOCwise Logo" width="880"/>
+  <img src="./readme_figures/tocwise.png" alt="TOCwise Logo" width="400"/>
 </p>
 
 <h1 align="center">TOCwise – AI-Powered Table of Contents</h1>
