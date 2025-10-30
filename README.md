@@ -107,6 +107,8 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 - [Gemini](https://gemini.google.com)
 - [Qwen](https://qwen.ai)
 #### Other Webpages
+- [Testing AI's GeoGuessr Genius](https://www.astralcodexten.com/p/testing-ais-geoguessr-genius)
+- [CCMDI Blog](https://ccmdi.com/blog/GeoBench)
 - [Linux man page](https://linux.die.net/man/1/intro)
 - [React Docs](https://react.dev/learn)
 - [Bair Blog](https://bair.berkeley.edu/blog/2025/04/08/plaid/)
