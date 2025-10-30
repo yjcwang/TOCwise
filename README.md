@@ -6,6 +6,7 @@
 
 
 **TOCwise** is a Chrome extension built on **Gemini Nano AI**, primarily designed for **chatbot and AI conversation pages**, while also supporting long-form articles and documentation sites — making every page effortless to explore.  
+
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
 
 ## 🚀 Key Features
