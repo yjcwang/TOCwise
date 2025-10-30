@@ -9,6 +9,8 @@
 
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
 
+**TOCwise** aims not just to fix a problem, but to **inspire new ideas in chatbot UI design**, moving beyond the static layouts that haven’t evolved since 2022.
+
 ## 🚀 Key Features
 
 - **🤖 AI-Generated Semantic TOC** – Uses the built-in Gemini Nano AI to craft concise, meaningful titles for every section.
