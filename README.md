@@ -1,12 +1,15 @@
 <p align="center">
-  <img src="./readme_figures/tocwise.png" alt="TOCwise Logo" width="120"/>
+  <img src="./readme_figures/tocwise.png" alt="TOCwise Logo" width="400"/>
 </p>
 
 <h1 align="center">TOCwise – AI-Powered Table of Contents</h1>
 
 
 **TOCwise** is a Chrome extension built on **Gemini Nano AI**, primarily designed for **chatbot and AI conversation pages**, while also supporting long-form articles and documentation sites — making every page effortless to explore.  
+
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
+
+**TOCwise** aims not just to fix a problem, but to **inspire new ideas in chatbot UI design**, moving beyond the static layouts that haven’t evolved since 2022.
 
 ## 🚀 Key Features
 
@@ -106,6 +109,8 @@ TOCwise automatically selects the most effective segmentation strategy for each 
 - [Gemini](https://gemini.google.com)
 - [Qwen](https://qwen.ai)
 #### Other Webpages
+- [Testing AI's GeoGuessr Genius](https://www.astralcodexten.com/p/testing-ais-geoguessr-genius)
+- [CCMDI Blog](https://ccmdi.com/blog/GeoBench)
 - [Linux man page](https://linux.die.net/man/1/intro)
 - [React Docs](https://react.dev/learn)
 - [Bair Blog](https://bair.berkeley.edu/blog/2025/04/08/plaid/)
