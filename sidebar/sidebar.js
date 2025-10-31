@@ -1,3 +1,12 @@
+// Chrome sometimes throws "Receiving end does not exist" when tabs aren't ready.
+// This is harmless in extension sidepanels but caught here to avoid console noise.
+window.addEventListener("unhandledrejection", event => {
+  if (event.reason?.message?.includes("Receiving end does not exist")) {
+    event.preventDefault(); // stop red error
+    console.log("[TOCwise] Ignored harmless error:", event.reason.message);
+  }
+});
+
 const ul = document.getElementById("list");
 const refreshBtn = document.getElementById("refresh");
 const summaryCache = {}; // Cache overview for each chunk
