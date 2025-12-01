@@ -11,11 +11,8 @@ It automatically understands the structure of any page, creates a **semantic, cl
 
 **TOCwise** aims not just to fix a problem, but to **inspire new ideas in chatbot UI design**, moving beyond the static layouts that haven’t evolved since 2022.
 
-<p align="center">
-  <a href="https://youtu.be/fHdenvCFZCw">
-    <img src="https://img.youtube.com/vi/fHdenvCFZCw/maxresdefault.jpg" alt="Watch the video" width="100%">
-  </a>
-</p>
+[Demo video (youtube)](https://youtu.be/fHdenvCFZCw)
+
 
 ## 🚀 Key Features
 
