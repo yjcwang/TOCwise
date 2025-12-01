@@ -1,6 +1,7 @@
 <p align="center">
   <img src="./readme_figures/tocwise.png" alt="TOCwise Logo" width="400"/>
 </p>
+[Watch Demo video here](https://youtu.be/fHdenvCFZCw)
 
 <h1 align="center">TOCwise – AI-Powered Table of Contents</h1>
 
@@ -10,8 +11,6 @@
 It automatically understands the structure of any page, creates a **semantic, clickable table of contents**, and helps you jump instantly to the parts that matter.
 
 **TOCwise** aims not just to fix a problem, but to **inspire new ideas in chatbot UI design**, moving beyond the static layouts that haven’t evolved since 2022.
-
-[Demo video (youtube)](https://youtu.be/fHdenvCFZCw)
 
 
 ## 🚀 Key Features
