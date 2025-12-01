@@ -1,7 +1,7 @@
 <p align="center">
   <img src="./readme_figures/tocwise.png" alt="TOCwise Logo" width="400"/>
 </p>
-[Watch Demo video here](https://youtu.be/fHdenvCFZCw)
+Demo video: https://youtu.be/fHdenvCFZCw
 
 <h1 align="center">TOCwise – AI-Powered Table of Contents</h1>
 
